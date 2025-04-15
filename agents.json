@@ -1,7 +1,12 @@
 {
-  "schools": {},
-  "clients": {
-    "Billy": {},
-    "Alice": {}
-  }
+    "schools": {
+        "Marques_De_Comares": {},
+        "La_Palmera": {},
+        "Carlos_Cano": {}
+    },
+    "clients": {
+        "Billy": {},
+        "Alice": {},
+        "Paco": {}
+    }
 }
