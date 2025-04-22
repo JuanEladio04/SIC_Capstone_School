@@ -1,12 +1,26 @@
 {
     "schools": {
-        "Marques_De_Comares": {},
-        "La_Palmera": {},
-        "Carlos_Cano": {}
+        "Marques_De_Comares": {
+            "students": []
+        },
+        "La_Palmera": {
+            "students": []
+        },
+        "Carlos_Cano": {
+            "students": [
+                "Paco"
+            ]
+        }
     },
     "clients": {
-        "Billy": {},
-        "Alice": {},
-        "Paco": {}
+        "Billy": {
+            "enrolled_school": null
+        },
+        "Alice": {
+            "enrolled_school": null
+        },
+        "Paco": {
+            "enrolled_school": "Carlos_Cano"
+        }
     }
 }
