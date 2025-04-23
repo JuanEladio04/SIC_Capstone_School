@@ -1,14 +1,19 @@
 {
     "schools": {
         "Marques_De_Comares": {
-            "students": []
+            "students": [],
+            "courses": []
         },
         "La_Palmera": {
-            "students": []
+            "students": [],
+            "courses": []
         },
         "Carlos_Cano": {
             "students": [
                 "Paco"
+            ],
+            "courses": [
+                "Lengua"
             ]
         }
     },
