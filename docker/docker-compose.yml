@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  python-app:
+    image: python:3.10
+    container_name: SIC_Capstone_School
+    stdin_open: true
+    tty: true
+    working_dir: /app
+    volumes:
+      - ../:/app
+
+    command: python -m unittest ../test/test_city_simulation.py
