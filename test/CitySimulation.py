@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[ ]:
+# In[4]:
 
 
 class Agent:
@@ -21,20 +21,20 @@ class Agent:
 
 # ## Agent Manager
 
-# In[ ]:
+# In[5]:
 
 
 class AgentManager:
     """Clase base para gestionar la creación y eliminación de agentes."""
     def __init__(self):
-        self.agents = {}                    # Diccionario para almacenar agentes
-        self.TIME_THRESHOLD = 10            # Umbral de 10 segundos
+        self.agents = {}
+        self.TIME_THRESHOLD = 10
         
     def filter_agents(self,*agents_types):
         """Filtra agentes según los tipos proporcionados."""
         filtered_agents = {
             name: agent for name, agent in agents.items()
-            if isinstance(agent, tuple(agents_types))      # Filtrar según tipos
+            if isinstance(agent, tuple(agents_types))  
         }
         return filtered_agents
     
@@ -68,22 +68,12 @@ class AgentManager:
         if agent_type:
             print(f"Current {agent_type.__name__}(s):")
             filtered_agents = self.filter_agents(agent_type)
-            for agent in filtered_agents.values():               # Imprimir descripciones de los agentes filtrados
+            for agent in filtered_agents.values():
                 print(agent.describe())
         else:
             print("Current agents:")
             for agent in agents.values():
                 print(agent.describe())     
-
-    def check_ready_services(self):
-        """Verifica si hay servicios listos para ser atendidos por cada ayuntamiento."""
-        filtered_agents = self.filter_agents(School)  # Filtrar solo los ayuntamientos
-        for town_hall in filtered_agents.values():
-            while not town_hall.request_services.is_empty():  # Procesar todos los servicios en la cola
-                if self.is_time_to_serve(town_hall):  # Verificar si es tiempo de atender el servicio
-                    town_hall.process_request_service()  # Procesar el servicio
-                else:
-                    break  # Salir si no es tiempo de procesar el siguiente servicio
     
     def load_agents_from_file(self, file_path):
         """Carga agentes desde un fichero JSON."""
@@ -160,10 +150,11 @@ class Client(Agent):
         "client add_client <client_name>": "Add a client (student) to the system.",
         "client enroll_in_school <client_name> <school_name>": "Enroll a client in an specific school.",
         "client leave_school <client_name>": "Allow a client to leave school.",
-        # "client join_enrollment_queue <client_name> <school_name><course_name>": "Join a client in a queue to enroll a course.",
+        "client join_enrollment_queue <client_name> <school_name> <course_name>": "Join a client in a queue to enroll a course.",
         # "client assist_course <school_name> <couser_name>": "Assist a course in a school.",
         "client show_list": "Show the list of clients in the system.",
         # "client take_exam <client_name> <course_name> <exam_name>": "Allow a student to take an exam of a enrolled course.",
+        "client remove_client <client_name>": "Removes the client from the agents.",
         "quit": "q: Exit the simulation."
     }
     
@@ -174,7 +165,7 @@ class Client(Agent):
             self.school_stack.push(school.name)
             school.enroll_in_school(self.name)
         else:
-            print(f'{self.name} is already enrolled in {self.school_stack.peek()}.')
+            print(f'Client {self.name} is already enrolled in {self.school_stack.peek()}.')
     
     def leave_school(self):
             if not self.school_stack.is_empty():
@@ -182,7 +173,7 @@ class Client(Agent):
                 if school_name: 
                     school = self.agent_manager.get_agent_by_name(school_name, School)
                     if school:
-                        school.remove_student(self.name)  
+                        school.students.remove(self.name)
                         print(f'{self.name} exited {school_name}.')
                     else:
                         print(f"Error: School '{school_name}' not found.")
@@ -192,13 +183,35 @@ class Client(Agent):
                 print(f'{self.name} is not currently enrolled in any school.')
     
     def join_enrollment_queue(self, school_name, course_name):
-        pass
+            school = self.agent_manager.get_agent_by_name(school_name, School)
+            if school:
+                if self.name in school.students:
+                    if course_name in school.courses:
+                        already_in_queue = False
+                        for item in school.courses_client_queue.queue:
+                            if item == [course_name, self.name]:
+                                already_in_queue = True
+                                break
+                        if not already_in_queue:
+                            school.courses_client_queue.enqueue([course_name, self.name])
+                            print(f'{self.name} joined the enrollment queue for {course_name} in {school_name}.')
+                        else:
+                            print(f'{self.name} is already in the enrollment queue for {course_name} in {school_name}.')
+                    else:
+                        print(f'{course_name} is not available in {school_name}.')
+                else:
+                    print(f'{self.name} is not enrolled in {school_name}.')
+            else:
+                print(f"School '{school_name}' do not exist.")
     
     def assist_course(self, course_name):
         pass
     
     def take_exam(self, course_name, exam_name):
         pass
+    
+    def remove_client(self):
+        self.agent_manager.remove_agent(self.name)
 
     @classmethod
     def help(cls):
@@ -216,8 +229,10 @@ class Client(Agent):
 class School(Agent):
     def __init__(self, name):
         super().__init__(name)
-        self.students = []                               # Lista de estudiantes en la escuela  
-        self.courses = []                               # Lista de estudiantes en la escuela  
+        self.students = []  
+        self.courses = [] 
+        self.courses_client_queue = Queue() 
+        self.agent_manager = AgentManager() 
 
 
     HELP_MESSAGES = {
@@ -234,6 +249,8 @@ class School(Agent):
         # "school grade_exam <school_name> <course_name> <client_name> <exam_name>": "Grade an exam that the client has taken in a course.",
         # "school remove_exam_from_course <school_name> <course_name> <exam_name>": "Remove an exam from a course if no client has submitted it.",
         # "school show_exams <school_name> <course_name>": "Show the list of exams available for a course at the school.",
+        "school remove_school <school_name>": "Removes the school from the agents.",
+        
         "quit": "q: Exit the simulation."
     }
     
@@ -289,6 +306,9 @@ class School(Agent):
     def show_exams(self, school_name, course_name):
         pass
     
+    def remove_school(self):
+        self.agent_manager.remove_agent(self.name)
+    
     # Other methods-----------------------------------------------------------
     
     def enroll_in_school(self, client_name):
@@ -297,13 +317,6 @@ class School(Agent):
             print(f"Client '{client_name}' has been enrolled in school '{self.name}'.")
         else:
             print(f"Client '{client_name}' is already enrolled in school '{self.name}'.")
-            
-    def leave_school(self, client_name):
-        if client_name in self.students:
-            self.students.remove(client_name)
-            print(f"Client '{client_name}' has left school '{self.name}'.")
-        else:
-            print(f"Client '{client_name}' is not enrolled in school '{self.name}'.")
 
     @classmethod
     def help(cls):
@@ -326,6 +339,7 @@ class CitySimulation:
         self.agent_manager.agents = agents               
          
         self.ERROR_MESSAGES = {                           
+            "": "",
             "invalid_command": "Error: Invalid command.",
             "school_not_found": "Error: School '{name}' not found.",
             "client_not_found": "Error: Client '{name}' not found.",
@@ -401,20 +415,24 @@ class CitySimulation:
                 self.agent_manager.save_agents_to_file(file_path)
                 
         elif cmd == 'school':
-            if   parts[1] == 'add_school':
+            if parts[1] == 'add_school':
                 if self.validate_command(parts, 3, "invalid_format", "school add_school <school_name>"):
                     _, _, school_name = parts
-                    self.agent_manager.add_agent(School, school_name)
-                    print(f"School '{school_name}' added to the system.")
+                    school = self.get_agent_or_error(school_name, School, "")
+                    if not school:
+                        self.agent_manager.add_agent(School, school_name)
+                        print(f"School '{school_name}' added to the system.")
+                    else:
+                        print(f"School '{school_name}' already exists.")
                     
-            if   parts[1] == 'create_course':
+            elif   parts[1] == 'create_course':
                 if self.validate_command(parts, 4, "invalid_format", "school create_course <course_name> <school_name>"):
                     _, _, course_name, school_name = parts
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
                     if school:
                         school.create_course(course_name)     
 
-            if   parts[1] == 'show_courses':
+            elif   parts[1] == 'show_courses':
                 if self.validate_command(parts, 3, "invalid_format", "school show_courses <school_name>"):
                     _, _, school_name = parts
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
@@ -425,12 +443,12 @@ class CitySimulation:
                 if self.validate_command(parts, 2, "invalid_format", "school show_list"):
                     self.agent_manager.list_agents(School)
                     
-            elif parts[1] == 'show_students':
-                if self.validate_command(parts, 3, "invalid_format", "school show_students <school_name>"):
+            elif   parts[1] == 'remove_school':
+                if self.validate_command(parts, 3, "invalid_format", "school remove_school <school_name>"):
                     _, _, school_name = parts
-                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    school = self.get_agent_or_error(school_name, School, "client_not_found")
                     if school:
-                        school.show_students()                       
+                        school.remove_school()                    
             else:
                 print(self.ERROR_MESSAGES["invalid_command"])
                 self.help_school()
@@ -439,8 +457,12 @@ class CitySimulation:
             if   parts[1] == 'add_client':
                 if self.validate_command(parts, 3, "invalid_format", "client add_client <client_name>"):
                     _, _, client_name = parts
-                    self.agent_manager.add_agent(Client, client_name)
-                    print(f"Client '{client_name}' added to the system.")
+                    client = self.get_agent_or_error(client_name, Client, "")
+                    if not client:
+                        self.agent_manager.add_agent(Client, client_name)
+                        print(f"Client '{client_name}' added to the system.")
+                    else:
+                        print(f"Client '{client_name}' already exists.")
                     
             elif parts[1] == 'enroll_in_school':
                 if self.validate_command(parts, 4, "invalid_format", "client enroll_in_school <client_name> <school_name>"):
@@ -456,10 +478,24 @@ class CitySimulation:
                     client = self.get_agent_or_error(client_name, Client, "client_not_found")
                     if client:
                         client.leave_school()
+                        
+            elif parts[1] == 'join_enrollment_queue':
+                if self.validate_command(parts, 5, "invalid_format", "client join_enrollment_queue <client_name> <school_name> <course_name>"):
+                    _, _, client_name, school_name, course_name = parts
+                    client = self.get_agent_or_error(client_name, Client, "client_not_found")
+                    if client:
+                        client.join_enrollment_queue(school_name, course_name)
             
             elif   parts[1] == 'show_list':
                 if self.validate_command(parts, 2, "invalid_format", "client show_list"):
                     self.agent_manager.list_agents(Client)
+                    
+            elif   parts[1] == 'remove_client':
+                if self.validate_command(parts, 3, "invalid_format", "client remove_client <client_name>"):
+                    _, _, client_name = parts
+                    client = self.get_agent_or_error(client_name, Client, "client_not_found")
+                    if client:
+                        client.remove_client()
 
             else:
                 print(self.ERROR_MESSAGES["invalid_format"])
@@ -471,7 +507,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[ ]:
+# In[9]:
 
 
 class Stack:
@@ -494,13 +530,13 @@ class Stack:
 
 # ## Queue
 
-# In[ ]:
+# In[10]:
 
 
 class Queue:
     
     def __init__(self):
-        self.queue = []
+        self.queue = []        
     
     def is_empty (self):
         return True if len(self.queue) == 0 else False
@@ -527,7 +563,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[ ]:
+# In[11]:
 
 
 # Diccionario global para almacenar agentes
@@ -536,7 +572,7 @@ agents = {}
 
 # ## Main program
 
-# In[ ]:
+# In[12]:
 
 
 import time
