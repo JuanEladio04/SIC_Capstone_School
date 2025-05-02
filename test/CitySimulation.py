@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[1]:
+# In[51]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[2]:
+# In[52]:
 
 
 class AgentManager:
@@ -146,7 +146,7 @@ class AgentManager:
 
 # ## Client
 
-# In[3]:
+# In[53]:
 
 
 class Client(Agent):
@@ -193,26 +193,32 @@ class Client(Agent):
                 print(f'{self.name} is not currently enrolled in any school.')
     
     def join_enrollment_queue(self, school_name, course_name):
-            school = self.agent_manager.get_agent_by_name(school_name, School)
-            if school:
-                if self.name in school.students:
-                    if course_name in school.courses:
-                        already_in_queue = False
-                        for item in school.courses_client_queue.queue:
-                            if item == [course_name, self.name]:
-                                already_in_queue = True
-                                break
-                        if not already_in_queue:
-                            school.courses_client_queue.enqueue([course_name, self.name])
-                            print(f'{self.name} joined the enrollment queue for {course_name} in {school_name}.')
-                        else:
-                            print(f'{self.name} is already in the enrollment queue for {course_name} in {school_name}.')
+        school = self.agent_manager.get_agent_by_name(school_name, School)
+        if school:
+            if self.name in school.students:
+                course_exists = False
+                for course in school.courses:
+                    if course.name == course_name:
+                        course_exists = True
+                        break
+
+                if course_exists:
+                    already_in_queue = False
+                    for item in school.courses_client_queue.queue:
+                        if item == [course_name, self.name]:
+                            already_in_queue = True
+                            break
+                    if not already_in_queue:
+                        school.courses_client_queue.enqueue([course_name, self.name])
+                        print(f'{self.name} joined the enrollment queue for {course_name} in {school_name}.')
                     else:
-                        print(f'{course_name} is not available in {school_name}.')
+                        print(f'{self.name} is already in the enrollment queue for {course_name} in {school_name}.')
                 else:
-                    print(f'{self.name} is not enrolled in {school_name}.')
+                    print(f'{course_name} is not available in {school_name}.')
             else:
-                print(f"School '{school_name}' do not exist.")
+                print(f'{self.name} is not enrolled in {school_name}.')
+        else:
+            print(f"School '{school_name}' do not exist.")
     
     def assist_course(self, course_name):
         pass
@@ -233,7 +239,7 @@ class Client(Agent):
 
 # ## School
 
-# In[4]:
+# In[54]:
 
 
 class School(Agent):
@@ -243,6 +249,7 @@ class School(Agent):
         self.courses = [] 
         self.courses_client_queue = Queue()
         self.is_open = True 
+        self.agent_manager = AgentManager() 
 
     HELP_MESSAGES = {
         "school add_school <school_name>": "Add a new school to the system.",
@@ -266,7 +273,12 @@ class School(Agent):
     # School methods-------------------------------------------------------------------------------------------------------------------------
     
     def create_course(self, course_name):
-        if course_name not in self.courses:
+        course_exists = False
+        for course in self.courses:
+            if course.name == course_name:
+                course_exists = True
+                break
+        if not course_exists:
             self.courses.append(Course(course_name))
             print(f"Course '{course_name}' has been created in school '{self.name}'.")
         else:
@@ -364,7 +376,7 @@ class School(Agent):
 
 # ## Course
 
-# In[5]:
+# In[55]:
 
 
 class Course():
@@ -376,7 +388,7 @@ class Course():
 
 # ## City Simulation
 
-# In[6]:
+# In[56]:
 
 
 class CitySimulation:
@@ -489,14 +501,7 @@ class CitySimulation:
                     
             elif   parts[1] == 'show_list':
                 if self.validate_command(parts, 2, "invalid_format", "school show_list"):
-                    self.agent_manager.list_agents(School)
-                    
-            elif   parts[1] == 'remove_school':
-                if self.validate_command(parts, 3, "invalid_format", "school remove_school <school_name>"):
-                    _, _, school_name = parts
-                    school = self.get_agent_or_error(school_name, School, "client_not_found")
-                    if school:
-                        school.show_students()                       
+                    self.agent_manager.list_agents(School)                     
             
             elif parts[1] == 'show_enrollment_queue':
                 if self.validate_command(parts, 3, "invalid_format", "school show_enrollment_queue <school_name>"):
@@ -520,6 +525,14 @@ class CitySimulation:
                             school.open(school_name)
                         elif cmd == 'close':
                             school.close(school_name)
+        
+            elif   parts[1] == 'remove_school':
+                if self.validate_command(parts, 3, "invalid_format", "school remove_school <school_name>"):
+                    _, _, school_name = parts
+                    school = self.get_agent_or_error(school_name, School, "client_not_found")
+                    if school:
+                        school.remove_school()  
+                        
             else:
                 print(self.ERROR_MESSAGES["invalid_command"])
                 self.help_school()
@@ -578,7 +591,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[7]:
+# In[57]:
 
 
 class Stack:
@@ -601,7 +614,7 @@ class Stack:
 
 # ## Queue
 
-# In[8]:
+# In[58]:
 
 
 class Queue:
@@ -634,7 +647,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[9]:
+# In[59]:
 
 
 # Diccionario global para almacenar agentes
@@ -643,7 +656,7 @@ agents = {}
 
 # ## Main program
 
-# In[10]:
+# In[60]:
 
 
 import time
