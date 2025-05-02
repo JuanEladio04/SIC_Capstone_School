@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[4]:
+# In[1]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[5]:
+# In[2]:
 
 
 class AgentManager:
@@ -87,8 +87,11 @@ class AgentManager:
                 self.add_agent(School, school_name)
                 school = self.get_agent_by_name(school_name, School)
                 school.students = school_data.get("students", [])
-                school.courses = school_data.get("courses", [])
-                
+                for course_name, course_info in school_data.get("courses", {}).items():
+                    course = Course(name=course_name)
+                    course.students = course_info.get("students", [])
+                    course.exams = course_info.get("exams", [])
+                    school.courses.append(course)             
             for client_name, client_data in data.get("clients", {}).items():
                 self.add_agent(Client, client_name)
                 client = self.get_agent_by_name(client_name, Client)
@@ -115,9 +118,16 @@ class AgentManager:
 
         # Guardar schools
         for school in self.filter_agents(School).values():
+            courses_data = {}
+            for course in school.courses:
+                courses_data[course.name] = {
+                    "name": course.name,
+                    "students": course.students,
+                    "exams": course.exams
+                }
             data["schools"][school.name] = {
                 "students": school.students,
-                "courses": school.courses
+                "courses": courses_data
             }
 
         # Guardar clients
@@ -136,7 +146,7 @@ class AgentManager:
 
 # ## Client
 
-# In[ ]:
+# In[3]:
 
 
 class Client(Agent):
@@ -223,7 +233,7 @@ class Client(Agent):
 
 # ## School
 
-# In[ ]:
+# In[4]:
 
 
 class School(Agent):
@@ -231,21 +241,20 @@ class School(Agent):
         super().__init__(name)
         self.students = []  
         self.courses = [] 
-        self.courses_client_queue = Queue() 
-        self.agent_manager = AgentManager() 
-
+        self.courses_client_queue = Queue()
+        self.is_open = True 
 
     HELP_MESSAGES = {
         "school add_school <school_name>": "Add a new school to the system.",
         "school create_course <course_name> <school_name>": "Create a new course at school.",
         "school show_students <school_name>": "Show the list of all students registered at school.",
-        # "school show_enrollment_queue <school_name>": "Show the enrollment queue for the course.",
+        "school show_enrollment_queue <school_name>": "Show the enrollment queue for the course.",
         # "school admit_student_from_queue <school_name><course_name>": "Admit the next student from the queue to enroll in to a course.",
         "school show_courses <school_name>": "Show the available courses at school.",
-        # "school remove_student <school_name> <client_name>": "Remove a student from school.",
+        "school remove_student <school_name> <client_name>": "Remove a student from school.",
         "school show_list": "Show the list of schools in the system",
-        # "school close / open <schol_name>": "Open / close school, if there isn't students at class",
-        # "school add_exam_to_course <school_name> <course_name> <exam_name>": "Add an exam to a specific course at school.",
+        "school close / open <schol_name>": "Open / close school, if there isn't students at class",
+        "school add_exam_to_course <school_name> <course_name> <exam_name>": "Add an exam to a specific course at school.",
         # "school grade_exam <school_name> <course_name> <client_name> <exam_name>": "Grade an exam that the client has taken in a course.",
         # "school remove_exam_from_course <school_name> <course_name> <exam_name>": "Remove an exam from a course if no client has submitted it.",
         # "school show_exams <school_name> <course_name>": "Show the list of exams available for a course at the school.",
@@ -258,7 +267,7 @@ class School(Agent):
     
     def create_course(self, course_name):
         if course_name not in self.courses:
-            self.courses.append(course_name)
+            self.courses.append(Course(course_name))
             print(f"Course '{course_name}' has been created in school '{self.name}'.")
         else:
             print(f"Course '{course_name}' already exists in school '{self.name}'.")
@@ -271,8 +280,13 @@ class School(Agent):
             for student in self.students:
                 print(f"- {student}")
     
-    def show_enrollment_queue(self, school_name):
-        pass
+    def show_enrollment_queue(self):
+        if not self.courses_client_queue:
+            print(f"No students in the enrollment queue for school '{self.name}'.")
+        else:
+            print(f"Enrollment queue for school '{self.name}':")
+            for course, student in self.courses_client_queue:
+                print(f"- {student} (Course: {course})") 
     
     def admit_student_from_queue(self, school_name, course_name):
         pass
@@ -283,19 +297,41 @@ class School(Agent):
         else:
             print(f"Courses in school '{self.name}':")
             for course in self.courses:
-                print(f"- {course}")
+                print(f"- {course.name}")
     
-    def remove_student(self, school_name, client_name):
-        pass
+    def remove_student(self, client_name):
+        if client_name in self.students:
+            self.students.remove(client_name)
+            print(f"Student '{client_name}' has been removed from school '{self.name}'.")
+        else:
+            print(f"Student '{client_name}' not found in school '{self.name}'.")            
     
     def close(self, school_name):
-        pass
+        if not self.is_open:
+            print(f"School '{school_name}' is already closed.")
+        elif len(self.students) == 0:
+            self.is_open = False
+            print(f"School '{school_name}' is now closed.")
+        else:
+            print(f"School '{school_name}' cannot be closed while there are students enrolled.")
     
     def open(self, school_name):
-        pass
+        if self.is_open:
+            print(f"School '{school_name}' is already open.")
+        elif len(self.students) == 0:
+            self.is_open = True
+            print(f"School '{school_name}' is now open.")
+        else:
+            print(f"School '{school_name}' cannot be opened while there are no students enrolled.")
     
-    def add_exam_to_course(self, school_name, course_name, exam_name):
-        pass
+    def add_exam_to_course(self, course_name, exam_name):
+        if exam_name in self.exams:
+            print(f"The exam '{exam_name}' already exists and is associated with course '{self.exams[exam_name]}'.")
+        elif course_name in self.courses:
+            self.exams[exam_name] = course_name
+            print(f"The exam '{exam_name}' has been added to course '{course_name}'.")
+        else:
+            print(f"The course '{course_name}' is not found at the school {self.name}.")
     
     def grade_exam(self, school_name, course_name, client_name, exam_name):
         pass
@@ -326,9 +362,21 @@ class School(Agent):
             print(f"-{command}: {description}")
 
 
+# ## Course
+
+# In[5]:
+
+
+class Course():
+    def __init__(self, name):
+        self.name = name
+        self.students = []  
+        self.exams = [] 
+
+
 # ## City Simulation
 
-# In[ ]:
+# In[6]:
 
 
 class CitySimulation:
@@ -448,7 +496,30 @@ class CitySimulation:
                     _, _, school_name = parts
                     school = self.get_agent_or_error(school_name, School, "client_not_found")
                     if school:
-                        school.remove_school()                    
+                        school.show_students()                       
+            
+            elif parts[1] == 'show_enrollment_queue':
+                if self.validate_command(parts, 3, "invalid_format", "school show_enrollment_queue <school_name>"):
+                    _, _, school_name = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        school.show_enrollment_queue()
+            
+            elif parts[1] == 'remove_student':
+                if self.validate_command(parts, 4, "invalid_format", "school remove_student <school_name> <client_name>"):
+                    _, _, school_name, client_name = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        school.remove_student(client_name)
+            elif parts[1] == 'open' or parts[1] == 'close':
+                if self.validate_command(parts, 3, "invalid_format", "school open/close <school_name>"):
+                    _, cmd, school_name = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        if cmd == 'open':
+                            school.open(school_name)
+                        elif cmd == 'close':
+                            school.close(school_name)
             else:
                 print(self.ERROR_MESSAGES["invalid_command"])
                 self.help_school()
@@ -507,7 +578,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[9]:
+# In[7]:
 
 
 class Stack:
@@ -530,7 +601,7 @@ class Stack:
 
 # ## Queue
 
-# In[10]:
+# In[8]:
 
 
 class Queue:
@@ -563,7 +634,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[11]:
+# In[9]:
 
 
 # Diccionario global para almacenar agentes
@@ -572,7 +643,7 @@ agents = {}
 
 # ## Main program
 
-# In[12]:
+# In[10]:
 
 
 import time

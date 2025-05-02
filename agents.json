@@ -1,31 +1,15 @@
 {
     "schools": {
-        "Marques_De_Comares": {
+        "EOI": {
             "students": [],
-            "courses": []
-        },
-        "La_Palmera": {
-            "students": [],
-            "courses": []
-        },
-        "Carlos_Cano": {
-            "students": [
-                "Paco"
-            ],
-            "courses": [
-                "Lengua"
-            ]
+            "courses": {
+                "Python": {
+                    "name": "Python",
+                    "students": [],
+                    "exams": []
+                }
+            }
         }
     },
-    "clients": {
-        "Billy": {
-            "enrolled_school": null
-        },
-        "Alice": {
-            "enrolled_school": null
-        },
-        "Paco": {
-            "enrolled_school": "Carlos_Cano"
-        }
-    }
+    "clients": {}
 }
