@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[51]:
+# In[1]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[52]:
+# In[2]:
 
 
 class AgentManager:
@@ -146,7 +146,7 @@ class AgentManager:
 
 # ## Client
 
-# In[53]:
+# In[3]:
 
 
 class Client(Agent):
@@ -239,7 +239,7 @@ class Client(Agent):
 
 # ## School
 
-# In[54]:
+# In[4]:
 
 
 class School(Agent):
@@ -337,12 +337,17 @@ class School(Agent):
             print(f"School '{school_name}' cannot be opened while there are no students enrolled.")
     
     def add_exam_to_course(self, course_name, exam_name):
-        if exam_name in self.exams:
-            print(f"The exam '{exam_name}' already exists and is associated with course '{self.exams[exam_name]}'.")
-        elif course_name in self.courses:
-            self.exams[exam_name] = course_name
-            print(f"The exam '{exam_name}' has been added to course '{course_name}'.")
-        else:
+        course_exist = False
+        for course in self.courses:
+            if course.name == course_name:
+                course_exist = True
+                if exam_name in course.exams:
+                    print(f"The exam '{exam_name}' already exists and is associated with course '{course.name}'.")
+                else:   
+                    course.exams.append(exam_name)
+                    print(f"The exam '{exam_name}' has been added to course '{course_name}'.")
+                break
+        if not course_exist:
             print(f"The course '{course_name}' is not found at the school {self.name}.")
     
     def grade_exam(self, school_name, course_name, client_name, exam_name):
@@ -376,7 +381,7 @@ class School(Agent):
 
 # ## Course
 
-# In[55]:
+# In[5]:
 
 
 class Course():
@@ -388,7 +393,7 @@ class Course():
 
 # ## City Simulation
 
-# In[56]:
+# In[6]:
 
 
 class CitySimulation:
@@ -516,6 +521,7 @@ class CitySimulation:
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
                     if school:
                         school.remove_student(client_name)
+                        
             elif parts[1] == 'open' or parts[1] == 'close':
                 if self.validate_command(parts, 3, "invalid_format", "school open/close <school_name>"):
                     _, cmd, school_name = parts
@@ -525,6 +531,13 @@ class CitySimulation:
                             school.open(school_name)
                         elif cmd == 'close':
                             school.close(school_name)
+            
+            elif parts[1] == 'add_exam_to_course':
+                if self.validate_command(parts, 5, "invalid_format", "school add_exam_to_course <school_name> <course_name> <exam_name>"):
+                    _, _, school_name, course_name, exam_name = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        school.add_exam_to_course(course_name, exam_name)
         
             elif   parts[1] == 'remove_school':
                 if self.validate_command(parts, 3, "invalid_format", "school remove_school <school_name>"):
@@ -591,7 +604,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[57]:
+# In[7]:
 
 
 class Stack:
@@ -614,7 +627,7 @@ class Stack:
 
 # ## Queue
 
-# In[58]:
+# In[8]:
 
 
 class Queue:
@@ -647,7 +660,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[59]:
+# In[9]:
 
 
 # Diccionario global para almacenar agentes
@@ -656,7 +669,7 @@ agents = {}
 
 # ## Main program
 
-# In[60]:
+# In[10]:
 
 
 import time

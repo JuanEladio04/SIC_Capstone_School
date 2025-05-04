@@ -6,7 +6,10 @@
                 "Python": {
                     "name": "Python",
                     "students": [],
-                    "exams": []
+                    "exams": [
+                        "Chapter01",
+                        "Chapter02"
+                    ]
                 }
             }
         }
