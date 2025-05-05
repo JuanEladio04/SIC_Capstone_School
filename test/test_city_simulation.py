@@ -188,6 +188,7 @@ class TestCitySimulation(unittest.TestCase):
     def test_client_join_enrollment_queue(self):
         print('➡️ Testing client join_enrollment_queue <client_name> <school_name> <course_name> ...') 
         self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
+        self.run_command_and_assert("client add_client Alice", "Client 'Alice' added to the system.")
         self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
         self.run_command_and_assert("school add_school Carlos_Cano", "School 'Carlos_Cano' added to the system.")
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
@@ -196,17 +197,18 @@ class TestCitySimulation(unittest.TestCase):
         
         # Client joins the enrollment queue for a school
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
+        # Client tries to join a queue for a different school
+        self.run_command_and_assert("client join_enrollment_queue Alice EOI Python", "Client 'Alice' not enrolled in school 'EOI")
         # Client tries to join the same queue again
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy is already in the enrollment queue for Python in EOI.")
         # Client tries to join a different queue in the same school
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Ciencias", "Ciencias is not available in EOI.")
-        # Client tries to join a queue for a different school
-        self.run_command_and_assert("client join_enrollment_queue Billy Carlos_Cano Python", "Billy is not enrolled in Carlos_Cano.")
         # Client tries to join a non existing school
         self.run_command_and_assert("client join_enrollment_queue Billy Palmera Python", "School 'Palmera' do not exist.")
         
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
+        self.run_command_and_assert("client remove_client Alice", "Agent Alice removed from the system.")
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
         self.run_command_and_assert("school remove_school Carlos_Cano", "Agent Carlos_Cano removed from the system.")
     

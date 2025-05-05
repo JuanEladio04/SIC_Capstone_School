@@ -1,7 +1,7 @@
 {
     "schools": {
         "EOI": {
-            "students": [],
+            "students": ["Billy"],
             "courses": {
                 "Python": {
                     "name": "Python",
@@ -14,5 +14,9 @@
             }
         }
     },
-    "clients": {}
+    "clients": {
+        "Billy": {
+            "enrolled_school": "EOI"
+        }
+    }
 }

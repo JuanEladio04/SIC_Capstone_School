@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[1]:
+# In[ ]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[2]:
+# In[ ]:
 
 
 class AgentManager:
@@ -146,7 +146,7 @@ class AgentManager:
 
 # ## Client
 
-# In[3]:
+# In[ ]:
 
 
 class Client(Agent):
@@ -196,29 +196,26 @@ class Client(Agent):
         school = self.agent_manager.get_agent_by_name(school_name, School)
         if school:
             if self.name in school.students:
-                course_exists = False
                 for course in school.courses:
                     if course.name == course_name:
-                        course_exists = True
-                        break
+                        already_in_queue = False
+                        for student in course.enrollment_queue.queue:
+                            if student == self.name:
+                                already_in_queue = True
+                                break
 
-                if course_exists:
-                    already_in_queue = False
-                    for item in school.courses_client_queue.queue:
-                        if item == [course_name, self.name]:
-                            already_in_queue = True
-                            break
-                    if not already_in_queue:
-                        school.courses_client_queue.enqueue([course_name, self.name])
-                        print(f'{self.name} joined the enrollment queue for {course_name} in {school_name}.')
-                    else:
-                        print(f'{self.name} is already in the enrollment queue for {course_name} in {school_name}.')
+                        if not already_in_queue:
+                            course.enrollment_queue.enqueue(self.name)
+                            print(f"{self.name} joined the enrollment queue for {course_name} in {school_name}.")
+                        else:
+                            print(f"{self.name} is already in the enrollment queue for {course_name} in {school_name}.")
+                        break  
                 else:
-                    print(f'{course_name} is not available in {school_name}.')
+                    print(f"{course_name} is not available in {school_name}.")
             else:
-                print(f'{self.name} is not enrolled in {school_name}.')
+                print(f"Client '{self.name}' not enrolled in school '{school.name}")
         else:
-            print(f"School '{school_name}' do not exist.")
+                print(f"School '{school_name}' do not exist.")
     
     def assist_course(self, course_name):
         pass
@@ -239,7 +236,7 @@ class Client(Agent):
 
 # ## School
 
-# In[4]:
+# In[ ]:
 
 
 class School(Agent):
@@ -247,7 +244,6 @@ class School(Agent):
         super().__init__(name)
         self.students = []  
         self.courses = [] 
-        self.courses_client_queue = Queue()
         self.is_open = True 
         self.agent_manager = AgentManager() 
 
@@ -381,7 +377,7 @@ class School(Agent):
 
 # ## Course
 
-# In[5]:
+# In[ ]:
 
 
 class Course():
@@ -389,11 +385,12 @@ class Course():
         self.name = name
         self.students = []  
         self.exams = [] 
+        self.enrollment_queue = Queue()
 
 
 # ## City Simulation
 
-# In[6]:
+# In[ ]:
 
 
 class CitySimulation:
@@ -604,7 +601,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[7]:
+# In[ ]:
 
 
 class Stack:
@@ -627,7 +624,7 @@ class Stack:
 
 # ## Queue
 
-# In[8]:
+# In[ ]:
 
 
 class Queue:
@@ -660,7 +657,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[9]:
+# In[ ]:
 
 
 # Diccionario global para almacenar agentes
@@ -669,7 +666,7 @@ agents = {}
 
 # ## Main program
 
-# In[10]:
+# In[ ]:
 
 
 import time
