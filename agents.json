@@ -1,11 +1,15 @@
 {
     "schools": {
         "EOI": {
-            "students": ["Billy"],
+            "students": [
+                "Billy"
+            ],
             "courses": {
                 "Python": {
                     "name": "Python",
-                    "students": [],
+                    "students": [
+                        "Billy"
+                    ],
                     "exams": [
                         "Chapter01",
                         "Chapter02"

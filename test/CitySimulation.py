@@ -193,28 +193,31 @@ class Client(Agent):
                 print(f'{self.name} is not currently enrolled in any school.')
     
     def join_enrollment_queue(self, school_name, course_name):
-        school = self.agent_manager.get_agent_by_name(school_name, School)
-        if school:
-            if self.name in school.students:
-                for course in school.courses:
-                    if course.name == course_name:
-                        already_in_queue = False
-                        for student in course.enrollment_queue.queue:
-                            if student == self.name:
-                                already_in_queue = True
+            school = self.agent_manager.get_agent_by_name(school_name, School)
+            if school:
+                if self.name in school.students:
+                    for course in school.courses:
+                        if course.name == course_name:
+                            if self.name in course.students:
+                                print(f"{self.name} is already enrolled in {course_name} at {school_name}.")
                                 break
+                            already_in_queue = False
+                            for student in course.enrollment_queue.queue:
+                                if student == self.name:
+                                    already_in_queue = True
+                                    break
 
-                        if not already_in_queue:
-                            course.enrollment_queue.enqueue(self.name)
-                            print(f"{self.name} joined the enrollment queue for {course_name} in {school_name}.")
-                        else:
-                            print(f"{self.name} is already in the enrollment queue for {course_name} in {school_name}.")
-                        break  
+                            if not already_in_queue:
+                                course.enrollment_queue.enqueue(self.name)
+                                print(f"{self.name} joined the enrollment queue for {course_name} in {school_name}.")
+                            else:
+                                print(f"{self.name} is already in the enrollment queue for {course_name} in {school_name}.")
+                            break
+                    else:
+                        print(f"{course_name} is not available in {school_name}.")
                 else:
-                    print(f"{course_name} is not available in {school_name}.")
+                    print(f"Client '{self.name}' not enrolled in school '{school.name}")
             else:
-                print(f"Client '{self.name}' not enrolled in school '{school.name}")
-        else:
                 print(f"School '{school_name}' do not exist.")
     
     def assist_course(self, course_name):
@@ -252,7 +255,7 @@ class School(Agent):
         "school create_course <course_name> <school_name>": "Create a new course at school.",
         "school show_students <school_name>": "Show the list of all students registered at school.",
         "school show_enrollment_queue <school_name>": "Show the enrollment queue for the course.",
-        # "school admit_student_from_queue <school_name><course_name>": "Admit the next student from the queue to enroll in to a course.",
+        "school admit_student_from_queue <school_name> <course_name>": "Admit the next student from the queue to enroll in to a course.",
         "school show_courses <school_name>": "Show the available courses at school.",
         "school remove_student <school_name> <client_name>": "Remove a student from school.",
         "school show_list": "Show the list of schools in the system",
@@ -296,8 +299,22 @@ class School(Agent):
             for course, student in self.courses_client_queue:
                 print(f"- {student} (Course: {course})") 
     
-    def admit_student_from_queue(self, school_name, course_name):
-        pass
+    def admit_student_from_queue(self, course_name):
+        for course in self.courses:
+            if course.name == course_name:
+                if not course.enrollment_queue.is_empty():
+                    student_name = course.enrollment_queue.dequeue()
+                    student = self.agent_manager.get_agent_by_name(student_name, Client)
+                    if student:
+                        course.students.append(student_name)
+                        print(f"The student '{student_name}' has been admitted to the course '{course.name}'.")
+                    else:
+                        print(f"Client '{student_name}' not found.")
+                else:
+                    print(f"The enrollment queue for course '{course.name}' is empty.")
+                break    
+        else:
+            print(f"The course '{course_name}' is not found at the school {self.name}.")
     
     def show_courses(self):
         if len(self.courses) == 0:
@@ -333,17 +350,15 @@ class School(Agent):
             print(f"School '{school_name}' cannot be opened while there are no students enrolled.")
     
     def add_exam_to_course(self, course_name, exam_name):
-        course_exist = False
         for course in self.courses:
             if course.name == course_name:
-                course_exist = True
                 if exam_name in course.exams:
                     print(f"The exam '{exam_name}' already exists and is associated with course '{course.name}'.")
                 else:   
                     course.exams.append(exam_name)
                     print(f"The exam '{exam_name}' has been added to course '{course_name}'.")
                 break
-        if not course_exist:
+        else:
             print(f"The course '{course_name}' is not found at the school {self.name}.")
     
     def grade_exam(self, school_name, course_name, client_name, exam_name):
@@ -511,6 +526,13 @@ class CitySimulation:
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
                     if school:
                         school.show_enrollment_queue()
+            
+            elif parts[1] == 'admit_student_from_queue':
+                if self.validate_command(parts, 4, "invalid_format", "school admit_student_from_queue <school_name> <course_name>"):
+                    _, _, school_name, course_name = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        school.admit_student_from_queue(course_name)
             
             elif parts[1] == 'remove_student':
                 if self.validate_command(parts, 4, "invalid_format", "school remove_student <school_name> <client_name>"):

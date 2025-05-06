@@ -57,6 +57,9 @@ class TestCitySimulation(unittest.TestCase):
 
         # Show the enrollment queue
         
+        #Admit the student in the course
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
+        
         # Client leaves the school
         self.run_command_and_assert("client leave_school Billy", "Billy exited EOI.")
         
@@ -150,7 +153,6 @@ class TestCitySimulation(unittest.TestCase):
     def test_school_add_exam_to_course(self):
         print('➡️ Testing school add_exam_to_course <school_name> <course_name> <exam_name> ...')
         self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
-        self.run_command_and_assert("school add_school Instituto", "School 'Instituto' added to the system.")
         self.run_command_and_assert("school create_course Python EOI", "'Python' has been created in school 'EOI'.")
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         
@@ -159,12 +161,11 @@ class TestCitySimulation(unittest.TestCase):
         #Adding an existing exam to the course
         self.run_command_and_assert("school add_exam_to_course EOI Python Chapter01", "The exam 'Chapter01' already exists and is associated with course 'Python'.")
         #Adding an exam to an non existing course
-        self.run_command_and_assert("school add_exam_to_course Instituto Python Chapter01", "The course 'Python' is not found at the school Instituto.")
+        self.run_command_and_assert("school add_exam_to_course EOI English Chapter01", "The course 'English' is not found at the school EOI.")
         
         
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
-        self.run_command_and_assert("school remove_school Instituto", "Agent Instituto removed from the system.")
 
 
     def test_client_enroll_in_school(self): 
@@ -205,6 +206,9 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Ciencias", "Ciencias is not available in EOI.")
         # Client tries to join a non existing school
         self.run_command_and_assert("client join_enrollment_queue Billy Palmera Python", "School 'Palmera' do not exist.")
+        #Client tries to enroll in a course where the client already belong.
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
+        self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy is already enrolled in Python at EOI.")
         
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
@@ -216,6 +220,33 @@ class TestCitySimulation(unittest.TestCase):
     def test_school_show_enrollment_queue(self):
         pass
     
+    
+    def test_school_admit_student_from_queue(self):
+        print('➡️ Testing school admit_student_from_queue <school_name> <course_name> ...')
+        self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
+        self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
+        self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
+        self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        
+        #Admit the student in the course
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
+        #Admit the student in the course again
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "The enrollment queue for course 'Python' is empty.")
+        #Admit a non existing student in the course
+        self.run_command_and_assert("client add_client Alice", "Client 'Alice' added to the system.")
+        self.run_command_and_assert("client enroll_in_school Alice EOI", "Client 'Alice' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("client join_enrollment_queue Alice EOI Python", "Alice joined the enrollment queue for Python in EOI.")
+        self.run_command_and_assert("client remove_client Alice", "Agent Alice removed from the system.")
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "Client 'Alice' not found.")
+        #Admit the student in a non existing course
+        self.run_command_and_assert("school admit_student_from_queue EOI English", "The course 'English' is not found at the school EOI.")
+        
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
+        self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
+            
     
     def test_client_leave_school(self):
         print('➡️ Testing client leave_school <client_name> ...')
