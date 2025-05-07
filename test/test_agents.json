@@ -12,13 +12,7 @@
                     ],
                     "exams": [
                         {
-                            "name": "Chapter03"
-                        },
-                        {
                             "name": "Chapter01"
-                        },
-                        {
-                            "name": "Chapter02"
                         }
                     ]
                 }

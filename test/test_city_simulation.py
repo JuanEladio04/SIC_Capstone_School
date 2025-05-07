@@ -60,6 +60,9 @@ class TestCitySimulation(unittest.TestCase):
         #Admit the student in the course
         self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
         
+        #Saves the data on a Json
+        self.run_command_and_assert("save_agents test/test_agents.json", "--- Agents saved successfully to test/test_agents.json. --- ")
+        
         # Client leaves the school
         self.run_command_and_assert("client leave_school Billy", "Billy exited EOI.")
         
