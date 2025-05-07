@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[89]:
+# In[394]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[90]:
+# In[395]:
 
 
 class AgentManager:
@@ -76,41 +76,46 @@ class AgentManager:
                 print(agent.describe())     
     
     def load_agents_from_file(self, file_path):
-            """Carga agentes desde un fichero JSON (con Exams como array de objetos)."""
+        """Carga agentes desde un fichero JSON (con Exams como array de objetos)."""
 
-            import json
-            try:
-                with open(file_path, 'r') as file:
-                    data = json.load(file)
+        import json
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
 
-                # Load schools
-                for school_name, school_data in data.get("schools", {}).items():
-                    self.add_agent(School, school_name)
-                    school = self.get_agent_by_name(school_name, School)
-                    school.students = school_data.get("students", [])
-                    for course_name, course_info in school_data.get("courses", {}).items():
-                        course = Course(name=course_name)
-                        course.students = course_info.get("students", [])
-                        # Load exams as objects
-                        exams_data = course_info.get("exams", [])
-                        course.exams = [Exam(exam_data["name"]) for exam_data in exams_data if "name" in exam_data]
-                        school.courses.append(course)
+            # Load schools
+            for school_name, school_data in data.get("schools", {}).items():
+                self.add_agent(School, school_name)
+                school = self.get_agent_by_name(school_name, School)
+                school.students = school_data.get("students", [])
+                school.courses = []  # Initialize courses list for the school
+                for course_name, course_info in school_data.get("courses", {}).items():
+                    course = Course(name=course_name)
+                    course.students = course_info.get("students", [])
+                    course.exams = [] # Initialize exams list for the course
+                    # Load exams as objects
+                    exams_data = course_info.get("exams", {})
+                    for exam_name, exam_details in exams_data.items():
+                        exam = Exam(exam_name)
+                        exam.exams_student = exam_details.get("exams_student", {})
+                        course.exams.append(exam)
+                    school.courses.append(course)
 
-                # Load clients
-                for client_name, client_data in data.get("clients", {}).items():
-                    self.add_agent(Client, client_name)
-                    client = self.get_agent_by_name(client_name, Client)
-                    enrolled_school = client_data.get("enrolled_school")
-                    if enrolled_school:
-                        client.school_stack.push(enrolled_school)
+            # Load clients
+            for client_name, client_data in data.get("clients", {}).items():
+                self.add_agent(Client, client_name)
+                client = self.get_agent_by_name(client_name, Client)
+                enrolled_school = client_data.get("enrolled_school")
+                if enrolled_school:
+                    client.school_stack.push(enrolled_school)
 
-                print(f"--- Agents loaded successfully from {file_path}. --- ")
-            except FileNotFoundError:
-                print(f"Error: File '{file_path}' not found.")
-            except json.JSONDecodeError:
-                print(f"Error: File '{file_path}' is not a valid JSON file.")
-            except Exception as e:
-                print(f"An error occurred while loading agents: {e}")
+            print(f"--- Agents loaded successfully from {file_path}. --- ")
+        except FileNotFoundError:
+            print(f"Error: File '{file_path}' not found.")
+        except json.JSONDecodeError:
+            print(f"Error: File '{file_path}' is not a valid JSON file.")
+        except Exception as e:
+            print(f"An error occurred while loading agents: {e}")
     
     
     def save_agents_to_file(self, file_path):
@@ -125,7 +130,16 @@ class AgentManager:
             for school in self.filter_agents(School).values():
                 courses_data = {}
                 for course in school.courses:
-                    exams_data = [{"name": exam.name} for exam in course.exams]
+                    exams_data = {}
+                    exams_student = {}
+                    
+                    for exam in course.exams:  
+                        for student, value in exam.exams_student.items():
+                            exams_student[student] = value
+                        exams_data[exam.name] = {
+                            "name": exam.name,
+                            "exams_student": exams_student
+                        }
                     courses_data[course.name] = {
                         "name": course.name,
                         "students": course.students,
@@ -152,7 +166,7 @@ class AgentManager:
 
 # ## Client
 
-# In[91]:
+# In[ ]:
 
 
 class Client(Agent):
@@ -230,7 +244,24 @@ class Client(Agent):
         pass
     
     def take_exam(self, course_name, exam_name):
-        pass
+        if not self.school_stack.is_empty():
+            school_name = self.school_stack.peek()
+            school = self.agent_manager.get_agent_by_name(school_name, School)
+            if school:
+                for course in school.courses:
+                    if course.name == course_name:
+                        for exam in course.exams:
+                            if exam.name == exam_name:
+                                exam.exams_student[self.name] = ''
+                                print(f"The exam '{exam.name}' has been taken by the student '{self.name}'.")
+                                break
+                        else:
+                            print(f"The exam '{exam_name}' do not exist in course '{course.name}'.")
+                        break
+                else:
+                    print(f"{course_name} is not available in {school_name}.")
+        else:
+            print(f"The student '{self.name}' is not enrolled in any school.")
     
     def remove_client(self):
         self.agent_manager.remove_agent(self.name)
@@ -245,7 +276,7 @@ class Client(Agent):
 
 # ## School
 
-# In[ ]:
+# In[397]:
 
 
 class School(Agent):
@@ -409,7 +440,7 @@ class School(Agent):
 
 # ## Course
 
-# In[93]:
+# In[398]:
 
 
 class Course():
@@ -422,17 +453,18 @@ class Course():
 
 # ## Exam
 
-# In[94]:
+# In[399]:
 
 
 class Exam():
     def __init__(self, name):
         self.name = name
+        self.exams_student = {}
 
 
 # ## City Simulation
 
-# In[95]:
+# In[400]:
 
 
 class CitySimulation:
@@ -657,7 +689,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[96]:
+# In[401]:
 
 
 class Stack:
@@ -680,7 +712,7 @@ class Stack:
 
 # ## Queue
 
-# In[97]:
+# In[402]:
 
 
 class Queue:
@@ -713,7 +745,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[98]:
+# In[403]:
 
 
 # Diccionario global para almacenar agentes
@@ -722,7 +754,7 @@ agents = {}
 
 # ## Main program
 
-# In[99]:
+# In[404]:
 
 
 import time

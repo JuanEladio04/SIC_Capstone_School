@@ -10,11 +10,14 @@
                     "students": [
                         "Billy"
                     ],
-                    "exams": [
-                        {
-                            "name": "Chapter01"
+                    "exams": {
+                        "Chapter01": {
+                            "name": "Chapter01",
+                            "exams_student": {
+                                "Billy": ""
+                            }
                         }
-                    ]
+                    }
                 }
             }
         }

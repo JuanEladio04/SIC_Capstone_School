@@ -60,6 +60,9 @@ class TestCitySimulation(unittest.TestCase):
         #Admit the student in the course
         self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
         
+        #Client takes an exam
+        self.run_command_and_assert("client take_exam Billy Python Chapter01", "The exam 'Chapter01' has been taken by the student 'Billy'.")
+        
         #Saves the data on a Json
         self.run_command_and_assert("save_agents test/test_agents.json", "--- Agents saved successfully to test/test_agents.json. --- ")
         
@@ -249,7 +252,33 @@ class TestCitySimulation(unittest.TestCase):
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
-            
+    
+    def test_client_take_exam(self):
+        print('➡️ Testing client take_exam <client_name> <course_name> <exam_name> ...')
+        self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
+        self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
+        self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
+        self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
+        self.run_command_and_assert("school add_exam_to_course EOI Python Chapter01", "The exam 'Chapter01' has been added to course 'Python'.")
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        
+        #Client takes an exam
+        self.run_command_and_assert("client take_exam Billy Python Chapter01", "The exam 'Chapter01' has been taken by the student 'Billy'.")
+        #A non existing client takes an exam
+        self.run_command_and_assert("client take_exam Alice Python Chapter01", "Error: Client 'Alice' not found.")
+        #A non existing client takes a non existing exam
+        self.run_command_and_assert("client take_exam Billy Python Chapter02", "The exam 'Chapter02' do not exist in course 'Python'.")
+        #A client takes a exam from a non existing course
+        self.run_command_and_assert("client take_exam Billy English Chapter01", "English is not available in EOI.")
+        #A client takes an exam without been enrolled in any school 
+        self.run_command_and_assert("client leave_school Billy", "Billy exited EOI.")
+        self.run_command_and_assert("client take_exam Billy Python Chapter01", "The student 'Billy' is not enrolled in any school.")
+        
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
+        self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
     
     def test_client_leave_school(self):
         print('➡️ Testing client leave_school <client_name> ...')
@@ -300,6 +329,8 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("school remove_student EOI Billy", "Student 'Billy' not found in school 'EOI'.")
         #Try to remove from a non existent school
         self.run_command_and_assert("school remove_student Palmera Billy", "Error: School 'Palmera' not found.")
+        #Try to remove a non existent student
+        self.run_command_and_assert("school remove_student EOI Alice", "Student 'Alice' not found in school 'EOI'.")
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
