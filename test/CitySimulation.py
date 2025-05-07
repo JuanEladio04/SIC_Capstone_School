@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[21]:
+# In[89]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[22]:
+# In[90]:
 
 
 class AgentManager:
@@ -152,7 +152,7 @@ class AgentManager:
 
 # ## Client
 
-# In[23]:
+# In[91]:
 
 
 class Client(Agent):
@@ -169,7 +169,7 @@ class Client(Agent):
         "client join_enrollment_queue <client_name> <school_name> <course_name>": "Join a client in a queue to enroll a course.",
         # "client assist_course <school_name> <couser_name>": "Assist a course in a school.",
         "client show_list": "Show the list of clients in the system.",
-        # "client take_exam <client_name> <course_name> <exam_name>": "Allow a student to take an exam of a enrolled course.",
+        "client take_exam <client_name> <course_name> <exam_name>": "Allow a student to take an exam of a enrolled course.",
         "client remove_client <client_name>": "Removes the client from the agents.",
         "quit": "q: Exit the simulation."
     }
@@ -245,7 +245,7 @@ class Client(Agent):
 
 # ## School
 
-# In[24]:
+# In[ ]:
 
 
 class School(Agent):
@@ -331,11 +331,17 @@ class School(Agent):
                 print(f"- {course.name}")
     
     def remove_student(self, client_name):
-        if client_name in self.students:
-            self.students.remove(client_name)
-            print(f"Student '{client_name}' has been removed from school '{self.name}'.")
-        else:
-            print(f"Student '{client_name}' not found in school '{self.name}'.")            
+        try:
+            student = self.agent_manager.get_agent_by_name(client_name, Client)
+            
+            if client_name in self.students:
+                self.students.remove(client_name)
+                student.school_stack.pop()
+                print(f"Student '{client_name}' has been removed from school '{self.name}'.")
+            else:
+                print(f"Student '{client_name}' not found in school '{self.name}'.")     
+        except:
+            print(f"Student '{student_name}' do not exist.")       
     
     def close(self, school_name):
         if not self.is_open:
@@ -403,7 +409,7 @@ class School(Agent):
 
 # ## Course
 
-# In[25]:
+# In[93]:
 
 
 class Course():
@@ -416,7 +422,7 @@ class Course():
 
 # ## Exam
 
-# In[26]:
+# In[94]:
 
 
 class Exam():
@@ -426,7 +432,7 @@ class Exam():
 
 # ## City Simulation
 
-# In[27]:
+# In[95]:
 
 
 class CitySimulation:
@@ -626,6 +632,13 @@ class CitySimulation:
             elif   parts[1] == 'show_list':
                 if self.validate_command(parts, 2, "invalid_format", "client show_list"):
                     self.agent_manager.list_agents(Client)
+            
+            elif   parts[1] == 'take_exam':
+                if self.validate_command(parts, 5, "invalid_format", "client take_exam <client_name> <course_name> <exam_name>"):
+                    _, _, client_name, course_name, exam_name = parts
+                    client = self.get_agent_or_error(client_name, Client, "client_not_found")
+                    if client:
+                        client.take_exam(course_name, exam_name)
                     
             elif   parts[1] == 'remove_client':
                 if self.validate_command(parts, 3, "invalid_format", "client remove_client <client_name>"):
@@ -644,7 +657,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[28]:
+# In[96]:
 
 
 class Stack:
@@ -667,7 +680,7 @@ class Stack:
 
 # ## Queue
 
-# In[29]:
+# In[97]:
 
 
 class Queue:
@@ -700,7 +713,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[30]:
+# In[98]:
 
 
 # Diccionario global para almacenar agentes
@@ -709,7 +722,7 @@ agents = {}
 
 # ## Main program
 
-# In[31]:
+# In[99]:
 
 
 import time
