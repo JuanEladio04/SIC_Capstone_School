@@ -374,23 +374,25 @@ class School(Agent):
         except:
             print(f"Student '{student_name}' do not exist.")       
     
-    def close(self, school_name):
-        if not self.is_open:
-            print(f"School '{school_name}' is already closed.")
-        elif len(self.students) == 0:
-            self.is_open = False
-            print(f"School '{school_name}' is now closed.")
+    def open_close(self, school_name, action):
+        if action == "open":
+            if self.is_open:
+                print(f"School '{school_name}' is already open.")
+            elif len(self.students) > 0:
+                self.is_open = True
+                print(f"School '{school_name}' is now open.")
+            else:
+                print(f"School '{school_name}' cannot be opened while there are no students enrolled.")
+        elif action == "close":
+            if not self.is_open:
+                print(f"School '{school_name}' is already closed.")
+            elif len(self.students) == 0:
+                self.is_open = False
+                print(f"School '{school_name}' is now closed.")
+            else:
+                print(f"School '{school_name}' cannot be closed while there are students enrolled.")
         else:
-            print(f"School '{school_name}' cannot be closed while there are students enrolled.")
-    
-    def open(self, school_name):
-        if self.is_open:
-            print(f"School '{school_name}' is already open.")
-        elif len(self.students) == 0:
-            self.is_open = True
-            print(f"School '{school_name}' is now open.")
-        else:
-            print(f"School '{school_name}' cannot be opened while there are no students enrolled.")
+            print(f"Unknown action '{action}'. Use 'open' or 'close'.")
     
     def add_exam_to_course(self, course_name, exam_name):
             for course in self.courses:
@@ -600,15 +602,12 @@ class CitySimulation:
                     if school:
                         school.remove_student(client_name)
                         
-            elif parts[1] == 'open' or parts[1] == 'close':
+            elif parts[1] in ('open', 'close'):
                 if self.validate_command(parts, 3, "invalid_format", "school open/close <school_name>"):
                     _, cmd, school_name = parts
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
-                    if school:
-                        if cmd == 'open':
-                            school.open(school_name)
-                        elif cmd == 'close':
-                            school.close(school_name)
+                if school:
+                    school.set_status(school_name, cmd)
             
             elif parts[1] == 'add_exam_to_course':
                 if self.validate_command(parts, 5, "invalid_format", "school add_exam_to_course <school_name> <course_name> <exam_name>"):

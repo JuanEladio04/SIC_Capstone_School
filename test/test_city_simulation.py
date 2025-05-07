@@ -77,6 +77,9 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
 
+        # Open and close the school
+        self.run_command_and_assert("school open_school EOI", "School 'EOI' is now open.")
+
         
     def test_client_add_client(self):
         print('➡️ Testing client add_client <client_name> ...')                
@@ -331,6 +334,38 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("school remove_student Palmera Billy", "Error: School 'Palmera' not found.")
         #Try to remove a non existent student
         self.run_command_and_assert("school remove_student EOI Alice", "Student 'Alice' not found in school 'EOI'.")
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
+        self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
+
+    def test_school_open_close(self):
+        print("➡️ Testing school open_close <school_name> <action> ...")
+        # Add a client and enroll in school
+        self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
+        self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        # Try closing the school when it's already closed and empty
+        self.run_command_and_assert("school open_close EOI close", "School 'EOI' is already closed.")
+
+        # Try opening the school with no students
+        self.run_command_and_assert("school open_close EOI open", "School 'EOI' cannot be opened while there are no students enrolled.")
+
+        # Now open the school
+        self.run_command_and_assert("school open_close EOI open", "School 'EOI' is now open.")
+
+        # Try opening again (already open)
+        self.run_command_and_assert("school open_close EOI open", "School 'EOI' is already open.")
+
+        # Try closing while student is still enrolled
+        self.run_command_and_assert("school open_close EOI close", "School 'EOI' cannot be closed while there are students enrolled.")
+
+        # Remove student
+        self.run_command_and_assert("school remove_student EOI Billy", "Student 'Billy' has been removed from school 'EOI'.")
+
+        # Now close the school
+        self.run_command_and_assert("school open_close EOI close", "School 'EOI' is now closed.")
+
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
