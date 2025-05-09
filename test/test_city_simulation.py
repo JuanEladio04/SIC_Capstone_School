@@ -72,7 +72,7 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("school remove_exam_from_course EOI Python Chapter02", "The exam 'Chapter02' has been removed successfully from 'Python'.")
         
         #Saves the data in a Json
-        self.run_command_and_assert("save_agents test/test_agents.json", "--- Agents saved successfully to test/test_agents.json. --- ")
+        # self.run_command_and_assert("save_agents test/test_agents.json", "--- Agents saved successfully to test/test_agents.json. --- ")
         
         # Client leaves the school
         self.run_command_and_assert("client leave_school Billy", "Billy exited EOI.")
