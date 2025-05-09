@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[394]:
+# In[5]:
 
 
 class Agent:
@@ -21,14 +21,13 @@ class Agent:
 
 # ## Agent Manager
 
-# In[395]:
+# In[7]:
 
 
 class AgentManager:
     """Clase base para gestionar la creación y eliminación de agentes."""
     def __init__(self):
         self.agents = {}
-        self.TIME_THRESHOLD = 10
         
     def filter_agents(self,*agents_types):
         """Filtra agentes según los tipos proporcionados."""
@@ -166,7 +165,7 @@ class AgentManager:
 
 # ## Client
 
-# In[ ]:
+# In[9]:
 
 
 class Client(Agent):
@@ -276,7 +275,7 @@ class Client(Agent):
 
 # ## School
 
-# In[397]:
+# In[11]:
 
 
 class School(Agent):
@@ -299,8 +298,8 @@ class School(Agent):
         "school close / open <schol_name>": "Open / close school, if there isn't students at class",
         "school add_exam_to_course <school_name> <course_name> <exam_name>": "Add an exam to a specific course at school.",
         # "school grade_exam <school_name> <course_name> <client_name> <exam_name>": "Grade an exam that the client has taken in a course.",
-        # "school remove_exam_from_course <school_name> <course_name> <exam_name>": "Remove an exam from a course if no client has submitted it.",
-        # "school show_exams <school_name> <course_name>": "Show the list of exams available for a course at the school.",
+        "school remove_exam_from_course <school_name> <course_name> <exam_name>": "Remove an exam from a course if no client has submitted it.",
+        "school show_exams <school_name> <course_name>": "Show the list of exams available for a course at the school.",
         "school remove_school <school_name>": "Removes the school from the agents.",
         
         "quit": "q: Exit the simulation."
@@ -414,11 +413,35 @@ class School(Agent):
     def grade_exam(self, school_name, course_name, client_name, exam_name):
         pass
     
-    def remove_exam_from_course(self, school_name, course_name, exam_name):
-        pass
+    def remove_exam_from_course(self, course_name, exam_name):
+        for course in self.courses:
+            if course_name == course.name:
+                for exam in course.exams:
+                    if exam_name == exam.name:
+                        if len(exam.exams_student) <= 0:
+                            course.exams.remove(exam)
+                            print(f"The exam '{exam_name}' has been removed successfully from '{course.name}'.")
+                        else:
+                            print(f"The exam '{exam.name}' cannot be removed because a student has already taken it.")
+                        break
+                else:
+                    print(f"The exam '{exam_name}' do not exist in course '{course.name}'.")
+                break
+        else:
+            print(f"The course '{course_name}' is not found at the school {self.name}.")
     
-    def show_exams(self, school_name, course_name):
-        pass
+    def show_exams(self, course_name):
+        for course in self.courses:
+            if course_name == course.name:
+                if len(course.exams) > 0:
+                    print(f"Exams in {course.name}: ")
+                    for exam in course.exams:
+                        print(f"- {exam.name}")
+                else:
+                    print(f"There is no exams in {course.name}.")
+                break
+        else:
+            print(f"The course '{course_name}' is not found at the school {self.name}.")
     
     def remove_school(self):
         self.agent_manager.remove_agent(self.name)
@@ -442,7 +465,7 @@ class School(Agent):
 
 # ## Course
 
-# In[398]:
+# In[13]:
 
 
 class Course():
@@ -455,7 +478,7 @@ class Course():
 
 # ## Exam
 
-# In[399]:
+# In[15]:
 
 
 class Exam():
@@ -466,7 +489,7 @@ class Exam():
 
 # ## City Simulation
 
-# In[400]:
+# In[17]:
 
 
 class CitySimulation:
@@ -615,6 +638,20 @@ class CitySimulation:
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
                     if school:
                         school.add_exam_to_course(course_name, exam_name)
+            
+            elif parts[1] == 'remove_exam_from_course':
+                if self.validate_command(parts, 5, "invalid_format", "school remove_exam_from_course <school_name> <course_name> <exam_name>"):
+                    _, _, school_name, course_name, exam_name = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        school.remove_exam_from_course(course_name, exam_name)
+            
+            elif parts[1] == 'show_exams':
+                if self.validate_command(parts, 4, "invalid_format", "school show_exams <school_name> <course_name>"):
+                    _, _, school_name, course_name = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        school.show_exams(course_name)
         
             elif   parts[1] == 'remove_school':
                 if self.validate_command(parts, 3, "invalid_format", "school remove_school <school_name>"):
@@ -688,7 +725,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[401]:
+# In[19]:
 
 
 class Stack:
@@ -711,7 +748,7 @@ class Stack:
 
 # ## Queue
 
-# In[402]:
+# In[21]:
 
 
 class Queue:
@@ -744,7 +781,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[403]:
+# In[23]:
 
 
 # Diccionario global para almacenar agentes
@@ -753,11 +790,17 @@ agents = {}
 
 # ## Main program
 
-# In[404]:
+# In[25]:
 
 
 import time
 if __name__ == "__main__":
     simulation = CitySimulation()
     simulation.command_loop() 
+
+
+# In[ ]:
+
+
+
 
