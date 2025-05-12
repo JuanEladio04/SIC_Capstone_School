@@ -67,6 +67,9 @@ class TestCitySimulation(unittest.TestCase):
         #Client takes an exam
         self.run_command_and_assert("client take_exam Billy Python Chapter01", "The exam 'Chapter01' has been taken by the student 'Billy'.")
         
+        #Grade the exam
+        self.run_command_and_assert("school grade_exam EOI Python Billy Chapter01 8.5", "The exam 'Chapter01' has been graded with '8.5' for the student 'Billy'.")
+        
         #An exam is removed from a course
         self.run_command_and_assert("school add_exam_to_course EOI Python Chapter02", "The exam 'Chapter02' has been added to course 'Python'.")
         self.run_command_and_assert("school remove_exam_from_course EOI Python Chapter02", "The exam 'Chapter02' has been removed successfully from 'Python'.")
@@ -307,6 +310,42 @@ class TestCitySimulation(unittest.TestCase):
         #A client takes an exam without been enrolled in any school 
         self.run_command_and_assert("client leave_school Billy", "Billy exited EOI.")
         self.run_command_and_assert("client take_exam Billy Python Chapter01", "The student 'Billy' is not enrolled in any school.")
+        
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
+        self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
+    
+    
+    def test_school_grade_exam(self):
+        print('➡️ Testing school grade_exam <school_name> <course_name> <client_name> <exam_name> <grade> ...')
+        self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
+        self.run_command_and_assert("client add_client Alice", "Client 'Alice' added to the system.")
+        self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
+        self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("client enroll_in_school Alice EOI", "Client 'Alice' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
+        self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
+        self.run_command_and_assert("client join_enrollment_queue Alice EOI Python", "Alice joined the enrollment queue for Python in EOI.")
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Alice' has been admitted to the course 'Python'.")
+        self.run_command_and_assert("school add_exam_to_course EOI Python Chapter01", "The exam 'Chapter01' has been added to course 'Python'.")
+        self.run_command_and_assert("client take_exam Billy Python Chapter01", "The exam 'Chapter01' has been taken by the student 'Billy'.")
+        # --------------------------------------------------------------------------------------------------------------------------------------------------        
+        
+        #Grade the exam
+        self.run_command_and_assert("school grade_exam EOI Python Billy Chapter01 8.5", "The exam 'Chapter01' has been graded with '8.5' for the student 'Billy'.")
+        #Grade the exam over the limits
+        self.run_command_and_assert("school grade_exam EOI Python Billy Chapter01 8000", "The grade '8000' is not valid. It must be between 0 and 10.")
+        #Grade the exam for a student that has not taken the exam
+        self.run_command_and_assert("school grade_exam EOI Python Alice Chapter01 8.5", "The student 'Alice' has not taken the exam 'Chapter01'.")
+        #Grade a non existing exam
+        self.run_command_and_assert("school grade_exam EOI Python Billy Chapter02 8.5", "The exam 'Chapter02' do not exist in course 'Python'.")
+        #Grade a exam from a non existing course
+        self.run_command_and_assert("school grade_exam EOI English Billy Chapter01 8.5", "The course 'English' is not found at the school EOI.")
+        #Grade the exam for a non existing student
+        self.run_command_and_assert("school grade_exam EOI Python John Chapter01 8.5", "The student 'John' is not enrolled in school 'EOI'.")
+        #Grade the exam for a non existing school
+        self.run_command_and_assert("school grade_exam Instituto Python John Chapter01 8.5", "Error: School 'Instituto' not found.")
         
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")

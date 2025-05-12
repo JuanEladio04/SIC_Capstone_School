@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[56]:
+# In[12]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[57]:
+# In[13]:
 
 
 class AgentManager:
@@ -165,7 +165,7 @@ class AgentManager:
 
 # ## Client
 
-# In[58]:
+# In[14]:
 
 
 class Client(Agent):
@@ -294,7 +294,7 @@ class School(Agent):
         "school show_list": "Show the list of schools in the system",
         "school close / open <schol_name>": "Open / close school, if there isn't students at class",
         "school add_exam_to_course <school_name> <course_name> <exam_name>": "Add an exam to a specific course at school.",
-        # "school grade_exam <school_name> <course_name> <client_name> <exam_name>": "Grade an exam that the client has taken in a course.",
+        "school grade_exam <school_name> <course_name> <client_name> <exam_name> <grade>": "Grade an exam that the client has taken in a course.",
         "school remove_exam_from_course <school_name> <course_name> <exam_name>": "Remove an exam from a course if no client has submitted it.",
         "school show_exams <school_name> <course_name>": "Show the list of exams available for a course at the school.",
         "school remove_school <school_name>": "Removes the school from the agents.",
@@ -394,8 +394,33 @@ class School(Agent):
         else:
             print(f"The course '{course_name}' is not found at the school {self.name}.")
     
-    def grade_exam(self, school_name, course_name, client_name, exam_name):
-        pass
+    def grade_exam(self, course_name, client_name, exam_name, grade):
+        if client_name not in self.students:
+            print(f"The student '{client_name}' is not enrolled in school '{self.name}'.")
+            return
+        
+        try:
+            float(grade)
+        except ValueError:
+            print(f"The grade '{grade}' is not valid. It must be a number.")
+            return
+        
+        course = self.getCourse(course_name)
+        if course:
+            exam = course.getExam(exam_name)
+            if exam:
+                if client_name in exam.exams_student:
+                    if float(grade) >= 0 and float(grade) <= 10:
+                        exam.exams_student[client_name] = grade
+                        print(f"The exam '{exam.name}' has been graded with '{grade}' for the student '{client_name}'.")   
+                    else:
+                        print(f"The grade '{grade}' is not valid. It must be between 0 and 10.")
+                else:
+                    print(f"The student '{client_name}' has not taken the exam '{exam.name}'.")
+            else:
+                print(f"The exam '{exam_name}' do not exist in course '{course.name}'.")
+        else:
+            print(f"The course '{course_name}' is not found at the school {self.name}.")
     
     def remove_exam_from_course(self, course_name, exam_name):
         course = self.getCourse(course_name)
@@ -450,7 +475,7 @@ class School(Agent):
 
 # ## Course
 
-# In[60]:
+# In[16]:
 
 
 class Course():
@@ -467,7 +492,7 @@ class Course():
 
 # ## Exam
 
-# In[61]:
+# In[17]:
 
 
 class Exam():
@@ -478,7 +503,7 @@ class Exam():
 
 # ## City Simulation
 
-# In[62]:
+# In[18]:
 
 
 class CitySimulation:
@@ -628,6 +653,13 @@ class CitySimulation:
                     if school:
                         school.add_exam_to_course(course_name, exam_name)
             
+            elif parts[1] == 'grade_exam':
+                if self.validate_command(parts, 7, "invalid_format", "school grade_exam <school_name> <course_name> <client_name> <exam_name> <grade>"):
+                    _, _, school_name, course_name, client_name, exam_name, grade = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        school.grade_exam(course_name, client_name, exam_name, grade)
+            
             elif parts[1] == 'remove_exam_from_course':
                 if self.validate_command(parts, 5, "invalid_format", "school remove_exam_from_course <school_name> <course_name> <exam_name>"):
                     _, _, school_name, course_name, exam_name = parts
@@ -714,7 +746,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[63]:
+# In[19]:
 
 
 class Stack:
@@ -737,7 +769,7 @@ class Stack:
 
 # ## Queue
 
-# In[64]:
+# In[20]:
 
 
 class Queue:
@@ -770,7 +802,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[65]:
+# In[21]:
 
 
 # Diccionario global para almacenar agentes
@@ -779,7 +811,7 @@ agents = {}
 
 # ## Main program
 
-# In[66]:
+# In[22]:
 
 
 import time
