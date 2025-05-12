@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[12]:
+# In[ ]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[13]:
+# In[ ]:
 
 
 class AgentManager:
@@ -165,7 +165,7 @@ class AgentManager:
 
 # ## Client
 
-# In[14]:
+# In[ ]:
 
 
 class Client(Agent):
@@ -216,25 +216,26 @@ class Client(Agent):
 
     
     def join_enrollment_queue(self, school_name, course_name):
-            school = self.agent_manager.get_agent_by_name(school_name, School)
-            if school:
-                if self.name in school.students:
-                    course = school.getCourse(course_name)
-                    if course:
-                        if self.name in course.students:
-                            print(f"{self.name} is already enrolled in {course_name} at {school_name}.")
-                        else:
-                            if self.name in course.enrollment_queue.queue:
-                                print(f"{self.name} is already in the enrollment queue for {course_name} in {school_name}.")
-                            else:
-                                course.enrollment_queue.enqueue(self.name)
-                                print(f"{self.name} joined the enrollment queue for {course_name} in {school_name}.")
+        school = self.agent_manager.get_agent_by_name(school_name, School)
+        
+        if school: 
+            if self.name in school.students:
+                course = school.getCourse(course_name)
+                if course:
+                    if self.name in course.students:
+                        print(f"{self.name} is already enrolled in {course_name} at {school_name}.")
                     else:
-                        print(f"{course_name} is not available in {school_name}.")
+                        if self.name in course.enrollment_queue.queue:
+                            print(f"{self.name} is already in the enrollment queue for {course_name} in {school_name}.")
+                        else:
+                            course.enrollment_queue.enqueue(self.name)
+                            print(f"{self.name} joined the enrollment queue for {course_name} in {school_name}.")
                 else:
-                    print(f"Client '{self.name}' not enrolled in school '{school.name}")
+                    print(f"{course_name} is not available in {school_name}.")
             else:
-                print(f"School '{school_name}' do not exist.")
+                print(f"Client '{self.name}' not enrolled in school '{school.name}")
+        else:
+            print(f"School '{school_name}' do not exist.")
     
     def assist_course(self, course_name):
         pass
@@ -243,7 +244,12 @@ class Client(Agent):
         if not self.school_stack.is_empty():
             school_name = self.school_stack.peek()
             school = self.agent_manager.get_agent_by_name(school_name, School)
+            
             if school:
+                if school.is_open == False:
+                    print(f"The school '{school_name}' is closed. Cannot take exams.")
+                    return
+                
                 course = school.getCourse(course_name)
                 if course:
                     exam = course.getExam(exam_name)
@@ -280,7 +286,7 @@ class School(Agent):
         super().__init__(name)
         self.students = {}  
         self.courses = {}
-        self.is_open = True 
+        self.is_open = False 
         self.agent_manager = AgentManager() 
 
     HELP_MESSAGES = {
@@ -479,7 +485,7 @@ class School(Agent):
 
 # ## Course
 
-# In[16]:
+# In[ ]:
 
 
 class Course():
@@ -496,7 +502,7 @@ class Course():
 
 # ## Exam
 
-# In[17]:
+# In[ ]:
 
 
 class Exam():
@@ -652,10 +658,10 @@ class CitySimulation:
                         
             elif parts[1] in ('open', 'close'):
                 if self.validate_command(parts, 3, "invalid_format", "school open/close <school_name>"):
-                    _, cmd, school_name = parts
+                    _, action, school_name = parts
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
                 if school:
-                    school.set_status(school_name, cmd)
+                    school.open_close(school_name, action)
             
             elif parts[1] == 'add_exam_to_course':
                 if self.validate_command(parts, 5, "invalid_format", "school add_exam_to_course <school_name> <course_name> <exam_name>"):
@@ -757,7 +763,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[19]:
+# In[ ]:
 
 
 class Stack:
@@ -780,7 +786,7 @@ class Stack:
 
 # ## Queue
 
-# In[20]:
+# In[ ]:
 
 
 class Queue:
@@ -813,7 +819,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[21]:
+# In[ ]:
 
 
 # Diccionario global para almacenar agentes
@@ -822,7 +828,7 @@ agents = {}
 
 # ## Main program
 
-# In[22]:
+# In[ ]:
 
 
 import time

@@ -55,6 +55,9 @@ class TestCitySimulation(unittest.TestCase):
         
         # Client enrolls in a school
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+    
+        # Open and close the school
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
         
         # Show the students in the school
         self.run_command_and_assert("school show_students EOI", "Students enrolled in school 'EOI':\n- Billy")
@@ -92,9 +95,6 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
 
-        # Open and close the school
-        # self.run_command_and_assert("school open_school EOI", "School 'EOI' is now open.")
-
         
     def test_client_add_client(self):
         print('➡️ Testing client add_client <client_name> ...')                
@@ -116,7 +116,31 @@ class TestCitySimulation(unittest.TestCase):
         
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
+    
+    
+    def test_school_open_close(self):
+        print('➡️ Testing school open_close <school_name> ...')
+        self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
+        self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
         
+        # Open the school with no students
+        self.run_command_and_assert("school open EOI", "School 'EOI' cannot be opened while there are no students enrolled.")
+        # Open the school
+        self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
+        # Try to open the school again
+        self.run_command_and_assert("school open EOI", "School 'EOI' is already open.")
+        # Close the school while there are students
+        self.run_command_and_assert("school close EOI", "School 'EOI' cannot be closed while there are students enrolled.")
+        # Close the school
+        self.run_command_and_assert("client leave_school Billy", "Billy exited EOI.")
+        self.run_command_and_assert("school close EOI", "School 'EOI' is now closed.")
+        
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
+        self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
+    
     
     def test_school_show_list(self):
         print('➡️ Testing school show_list ...')
@@ -256,6 +280,7 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
         self.run_command_and_assert("school add_school Carlos_Cano", "School 'Carlos_Cano' added to the system.")
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
         self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         
@@ -310,6 +335,7 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
         self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         
         #Admit the student in the course
@@ -335,6 +361,7 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
         self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
         self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
         self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
@@ -365,6 +392,7 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
         self.run_command_and_assert("client enroll_in_school Alice EOI", "Client 'Alice' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
         self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
         self.run_command_and_assert("client join_enrollment_queue Alice EOI Python", "Alice joined the enrollment queue for Python in EOI.")
@@ -399,6 +427,7 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
         self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
         self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
         self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
@@ -426,6 +455,7 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
         self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
         # --------------------------------------------------------------------------------------------------------------------------------------------------
 
         # Client leaves the school
@@ -436,35 +466,6 @@ class TestCitySimulation(unittest.TestCase):
         # --------------------------------------------------------------------------------------------------------------------------------------------------
         self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
         self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
-
-
-    # def test_school_open_close(self):
-    #     print("➡️ Testing school open_close <school_name> <action> ...")
-    #     # Add a client and enroll in school
-    #     self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
-    #     self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
-    #     self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
-    #     # --------------------------------------------------------------------------------------------------------------------------------------------------
-    #     # Try closing the school when it's already closed and empty
-    #     self.run_command_and_assert("school open_close EOI close", "School 'EOI' is already closed.")
-
-    #     # Try opening the school with no students
-    #     self.run_command_and_assert("school open_close EOI open", "School 'EOI' cannot be opened while there are no students enrolled.")
-
-    #     # Now open the school
-    #     self.run_command_and_assert("school open_close EOI open", "School 'EOI' is now open.")
-
-    #     # Try opening again (already open)
-    #     self.run_command_and_assert("school open_close EOI open", "School 'EOI' is already open.")
-
-    #     # Try closing while student is still enrolled
-    #     self.run_command_and_assert("school open_close EOI close", "School 'EOI' cannot be closed while there are students enrolled.")
-
-    #     # Remove student
-    #     self.run_command_and_assert("school remove_student EOI Billy", "Student 'Billy' has been removed from school 'EOI'.")
-
-    #     # Now close the school
-    #     self.run_command_and_assert("school open_close EOI close", "School 'EOI' is now closed.")
 
 
     def test_school_remove_student(self):
