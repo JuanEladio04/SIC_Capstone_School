@@ -287,7 +287,7 @@ class School(Agent):
         "school add_school <school_name>": "Add a new school to the system.",
         "school create_course <course_name> <school_name>": "Create a new course at school.",
         "school show_students <school_name>": "Show the list of all students registered at school.",
-        "school show_enrollment_queue <school_name>": "Show the enrollment queue for the course.",
+        "school show_enrollment_queue <school_name> <course_name>": "Show the enrollment queue for the course.",
         "school admit_student_from_queue <school_name> <course_name>": "Admit the next student from the queue to enroll in to a course.",
         "school show_courses <school_name>": "Show the available courses at school.",
         "school remove_student <school_name> <client_name>": "Remove a student from school.",
@@ -319,13 +319,17 @@ class School(Agent):
             for student in self.students:
                 print(f"- {student}")
     
-    def show_enrollment_queue(self):
-        if not self.courses_client_queue:
-            print(f"No students in the enrollment queue for school '{self.name}'.")
+    def show_enrollment_queue(self, course_name):
+        course = self.getCourse(course_name)
+        if course:
+            if course.enrollment_queue.is_empty():
+                print(f"The enrollment queue for course '{course_name}' in school '{self.name}' is empty.")
+            else:
+                print(f"Enrollment queue for course '{course_name}' in school '{self.name}':")
+                for student in course.enrollment_queue.queue:
+                    print(f"- {student}")
         else:
-            print(f"Enrollment queue for school '{self.name}':")
-            for course, student in self.courses_client_queue:
-                print(f"- {student} (Course: {course})") 
+            print(f"The course '{course_name}' is not found at the school {self.name}.")
     
     def admit_student_from_queue(self, course_name):
         course = self.getCourse(course_name)
@@ -503,7 +507,7 @@ class Exam():
 
 # ## City Simulation
 
-# In[18]:
+# In[ ]:
 
 
 class CitySimulation:
@@ -606,6 +610,13 @@ class CitySimulation:
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
                     if school:
                         school.create_course(course_name)     
+                    
+            elif   parts[1] == 'show_students':
+                if self.validate_command(parts, 3, "invalid_format", "school show_students <school_name>"):
+                    _, _, school_name = parts
+                    school = self.get_agent_or_error(school_name, School, "school_not_found")
+                    if school:
+                        school.show_students()     
 
             elif   parts[1] == 'show_courses':
                 if self.validate_command(parts, 3, "invalid_format", "school show_courses <school_name>"):
@@ -619,11 +630,11 @@ class CitySimulation:
                     self.agent_manager.list_agents(School)                     
             
             elif parts[1] == 'show_enrollment_queue':
-                if self.validate_command(parts, 3, "invalid_format", "school show_enrollment_queue <school_name>"):
-                    _, _, school_name = parts
+                if self.validate_command(parts, 4, "invalid_format", "school show_enrollment_queue <school_name> <course_name>"):
+                    _, _, school_name, course_name = parts
                     school = self.get_agent_or_error(school_name, School, "school_not_found")
                     if school:
-                        school.show_enrollment_queue()
+                        school.show_enrollment_queue(course_name)
             
             elif parts[1] == 'admit_student_from_queue':
                 if self.validate_command(parts, 4, "invalid_format", "school admit_student_from_queue <school_name> <course_name>"):

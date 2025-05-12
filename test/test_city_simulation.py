@@ -55,11 +55,15 @@ class TestCitySimulation(unittest.TestCase):
         
         # Client enrolls in a school
         self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        
+        # Show the students in the school
+        self.run_command_and_assert("school show_students EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
 
         #Client join enrollment queue for a course
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
 
         # Show the enrollment queue
+        self.run_command_and_assert("school show_enrollment_queue EOI Python", "Enrollment queue for course 'Python' in school 'EOI':\n- Billy")
         
         #Admit the student in the course
         self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
@@ -258,9 +262,28 @@ class TestCitySimulation(unittest.TestCase):
     
     
     def test_school_show_enrollment_queue(self):
-        pass
+        print('➡️ Testing client join_enrollment_queue <client_name> <school_name> <course_name> ...') 
+        self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
+        self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
+        self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+
+        # Show the enrollment queue when it's empty
+        self.run_command_and_assert("school show_enrollment_queue EOI Python", "The enrollment queue for course 'Python' in school 'EOI' is empty.")
+        # Show the enrollment queue
+        self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
+        self.run_command_and_assert("school show_enrollment_queue EOI Python", "Enrollment queue for course 'Python' in school 'EOI':\n- Billy")
+        # Show the enrollment queue for a non-existing course
+        self.run_command_and_assert("school show_enrollment_queue EOI English", "The course 'English' is not found at the school EOI.")
+        # Show the enrollment queue for a non-existing school
+        self.run_command_and_assert("school show_enrollment_queue Instituto Python", "Error: School 'Instituto' not found.")
     
-    
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
+        self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
+        
+        
     def test_school_admit_student_from_queue(self):
         print('➡️ Testing school admit_student_from_queue <school_name> <course_name> ...')
         self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
