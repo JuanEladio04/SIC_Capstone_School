@@ -238,7 +238,19 @@ class Client(Agent):
             print(f"School '{school_name}' do not exist.")
     
     def assist_course(self, course_name):
-        pass
+        school_name = self.school_stack.peek()
+        school = self.agent_manager.get_agent_by_name(school_name, School)
+
+        if school:
+            course = school.getCourse(course_name)
+            if course:
+                if self.name in course.students:
+                    print(f"{self.name} is already enrolled in {course_name}.")
+                else:
+                    course.students.append(self.name)
+                    print(f"{self.name} is now enrolled in {course_name}.")
+            else:
+                print(f"{course_name} is not available in {school_name}.")
     
     def take_exam(self, course_name, exam_name):
         if not self.school_stack.is_empty():
@@ -734,6 +746,13 @@ class CitySimulation:
                     client = self.get_agent_or_error(client_name, Client, "client_not_found")
                     if client:
                         client.join_enrollment_queue(school_name, course_name)
+            elif parts[1] == 'assist_course':
+                if self.validate_command(parts, 3, "invalid_format", "client assist_course <course_name>"):
+                    client_name, _, course_name = parts
+                    client = self.get_agent_or_error(client_name, Client, "client_not_found")
+                if client:
+                    client.assist_course(course_name)
+
             
             elif   parts[1] == 'show_list':
                 if self.validate_command(parts, 2, "invalid_format", "client show_list"):
