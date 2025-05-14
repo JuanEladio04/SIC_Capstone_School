@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[ ]:
+# In[12]:
 
 
 class Agent:
@@ -45,9 +45,9 @@ class AgentManager:
     def add_agent(self, agent_type, agent_name):
         """Añade un nuevo agente al sistema."""
         if isinstance(agent_type, type) and agent_type == Client: 
-            agents[agent_name] = Client(agent_name)
+            agents[agent_name] = Client(agent_name, self)
         elif isinstance(agent_type, type) and agent_type == School:
-            agents[agent_name] = School(agent_name)
+            agents[agent_name] = School(agent_name, self)
         else:
             print(f"Invalid agent type: {agent_type}. Please use valid agent.")
             return
@@ -75,112 +75,118 @@ class AgentManager:
                 print(agent.describe())     
     
     def load_agents_from_file(self, file_path):
-        """Carga agentes desde un fichero JSON (con Exams como array de objetos)."""
-
+        """Carga agentes desde un fichero JSON, incluyendo colas de inscripción y otros datos relevantes."""
         import json
+        global agents  # Asegurarse de usar el diccionario global
+
         try:
             with open(file_path, 'r') as file:
                 data = json.load(file)
 
-            # Load schools
+            # Cargar escuelas
             for school_name, school_data in data.get("schools", {}).items():
                 self.add_agent(School, school_name)
                 school = self.get_agent_by_name(school_name, School)
-                school.students = school_data.get("students", [])
-                school.courses = []  # Initialize courses list for the school
+                school.students = school_data.get("students", {})
+                school.is_open = school_data.get("is_open", False)  # Restaurar el estado de apertura
+                school.courses = {}  # Inicializar cursos como un diccionario
                 for course_name, course_info in school_data.get("courses", {}).items():
                     course = Course(name=course_name)
                     course.students = course_info.get("students", [])
-                    course.exams = [] # Initialize exams list for the course
-                    # Load exams as objects
+                    course.exams = {}  # Inicializar exámenes como un diccionario
+                    # Cargar exámenes como objetos
                     exams_data = course_info.get("exams", {})
                     for exam_name, exam_details in exams_data.items():
                         exam = Exam(exam_name)
                         exam.exams_student = exam_details.get("exams_student", {})
-                        course.exams.append(exam)
-                    school.courses.append(course)
+                        course.exams[exam_name] = exam
+                    # Restaurar la cola de inscripción
+                    course.enrollment_queue.queue = course_info.get("enrollment_queue", [])
+                    school.courses[course_name] = course
 
-            # Load clients
+            # Cargar clientes
             for client_name, client_data in data.get("clients", {}).items():
                 self.add_agent(Client, client_name)
                 client = self.get_agent_by_name(client_name, Client)
                 enrolled_school = client_data.get("enrolled_school")
                 if enrolled_school:
                     client.school_stack.push(enrolled_school)
+                # Restaurar toda la pila de escuelas
+                client.school_stack.stack = client_data.get("school_stack", [])
 
-            print(f"--- Agents loaded successfully from {file_path}. --- ")
+            print(f"--- Agents loaded successfully from {file_path}. ---")
         except FileNotFoundError:
             print(f"Error: File '{file_path}' not found.")
         except json.JSONDecodeError:
             print(f"Error: File '{file_path}' is not a valid JSON file.")
         except Exception as e:
             print(f"An error occurred while loading agents: {e}")
-    
-    
+
     def save_agents_to_file(self, file_path):
-            """Guarda los agentes en un fichero JSON (con Exams como array de objetos)."""
-            import json
-            data = {
-                "schools": {},
-                "clients": {}
+        """Guarda los agentes en un fichero JSON, incluyendo colas de inscripción y otros datos relevantes."""
+        import json
+        global agents  # Asegurarse de usar el diccionario global
+
+        data = {
+            "schools": {},
+            "clients": {}
+        }
+
+        # Guardar escuelas
+        for school in self.filter_agents(School).values():
+            courses_data = {}
+            for course in school.courses.values():
+                exams_data = {}
+                for exam in course.exams.values():
+                    exams_data[exam.name] = {
+                        "name": exam.name,
+                        "exams_student": exam.exams_student
+                    }
+                courses_data[course.name] = {
+                    "name": course.name,
+                    "students": course.students,
+                    "exams": exams_data,
+                    "enrollment_queue": course.enrollment_queue.queue  # Guardar la cola de inscripción
+                }
+            data["schools"][school.name] = {
+                "students": school.students,
+                "courses": courses_data,
+                "is_open": school.is_open  # Guardar el estado de apertura de la escuela
             }
 
-            # Guardar schools
-            for school in self.filter_agents(School).values():
-                courses_data = {}
-                for course in school.courses:
-                    exams_data = {}
-                    exams_student = {}
-                    
-                    for exam in course.exams:  
-                        for student, value in exam.exams_student.items():
-                            exams_student[student] = value
-                        exams_data[exam.name] = {
-                            "name": exam.name,
-                            "exams_student": exams_student
-                        }
-                    courses_data[course.name] = {
-                        "name": course.name,
-                        "students": course.students,
-                        "exams": exams_data
-                    }
-                data["schools"][school.name] = {
-                    "students": school.students,
-                    "courses": courses_data
-                }
+        # Guardar clientes
+        for client in self.filter_agents(Client).values():
+            data["clients"][client.name] = {
+                "enrolled_school": client.school_stack.peek(),
+                "school_stack": client.school_stack.stack  # Guardar toda la pila de escuelas
+            }
 
-            # Guardar clients
-            for client in self.filter_agents(Client).values():
-                data["clients"][client.name] = {
-                    "enrolled_school": client.school_stack.peek()
-                }
-
-            try:
-                with open(file_path, 'w') as file:
-                    json.dump(data, file, indent=4)
-                print(f"--- Agents saved successfully to {file_path}. --- ")
-            except Exception as e:
-                print(f"An error occurred while saving agents: {e}")
+        try:
+            with open(file_path, 'w') as file:
+                json.dump(data, file, indent=4)
+            print(f"--- Agents saved successfully to {file_path}. ---")
+        except Exception as e:
+            print(f"An error occurred while saving agents: {e}")
 
 
 # ## Client
 
-# In[ ]:
+# In[14]:
 
 
 class Client(Agent):
     """Clase que representa a un cliente que interactúa con el colegio."""
-    def __init__(self, name):
+    def __init__(self, name, agent_manager):
         super().__init__(name)
         self.school_stack = Stack()
-        self.agent_manager = AgentManager() 
+        self.agent_manager = agent_manager
     
     HELP_MESSAGES = {
         "client add_client <client_name>": "Add a client (student) to the system.",
         "client enroll_in_school <client_name> <school_name>": "Enroll a client in an specific school.",
         "client leave_school <client_name>": "Allow a client to leave school.",
         "client join_enrollment_queue <client_name> <school_name> <course_name>": "Join a client in a queue to enroll a course.",
-        # "client assist_course <school_name> <couser_name>": "Assist a course in a school.",
+        "client assist_course <school_name> <couser_name>": "Assist a course in a school.",
         "client show_list": "Show the list of clients in the system.",
         "client take_exam <client_name> <course_name> <exam_name>": "Allow a student to take an exam of a enrolled course.",
         "client remove_client <client_name>": "Removes the client from the agents.",
@@ -290,16 +296,16 @@ class Client(Agent):
 
 # ## School
 
-# In[ ]:
+# In[15]:
 
 
 class School(Agent):
-    def __init__(self, name):
+    def __init__(self, name, agent_manager):
         super().__init__(name)
         self.students = {}  
         self.courses = {}
         self.is_open = False 
-        self.agent_manager = AgentManager() 
+        self.agent_manager = agent_manager
 
     HELP_MESSAGES = {
         "school add_school <school_name>": "Add a new school to the system.",
@@ -497,7 +503,7 @@ class School(Agent):
 
 # ## Course
 
-# In[ ]:
+# In[16]:
 
 
 class Course():
@@ -514,7 +520,7 @@ class Course():
 
 # ## Exam
 
-# In[ ]:
+# In[17]:
 
 
 class Exam():
@@ -525,7 +531,7 @@ class Exam():
 
 # ## City Simulation
 
-# In[ ]:
+# In[18]:
 
 
 class CitySimulation:
@@ -746,6 +752,7 @@ class CitySimulation:
                     client = self.get_agent_or_error(client_name, Client, "client_not_found")
                     if client:
                         client.join_enrollment_queue(school_name, course_name)
+                        
             elif parts[1] == 'assist_course':
                 if self.validate_command(parts, 3, "invalid_format", "client assist_course <course_name>"):
                     client_name, _, course_name = parts
@@ -753,7 +760,6 @@ class CitySimulation:
                 if client:
                     client.assist_course(course_name)
 
-            
             elif   parts[1] == 'show_list':
                 if self.validate_command(parts, 2, "invalid_format", "client show_list"):
                     self.agent_manager.list_agents(Client)
@@ -782,7 +788,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[ ]:
+# In[19]:
 
 
 class Stack:
@@ -805,7 +811,7 @@ class Stack:
 
 # ## Queue
 
-# In[ ]:
+# In[20]:
 
 
 class Queue:
@@ -838,7 +844,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[ ]:
+# In[21]:
 
 
 # Diccionario global para almacenar agentes
@@ -847,7 +853,7 @@ agents = {}
 
 # ## Main program
 
-# In[ ]:
+# In[22]:
 
 
 import time

@@ -1,37 +1,35 @@
 {
     "schools": {
         "EOI": {
-            "students": [
-                "Billy"
-            ],
+            "students": {
+                "Billy": "Billy"
+            },
             "courses": {
                 "Python": {
                     "name": "Python",
                     "students": [
                         "Billy"
                     ],
-                    "exams": [
-                        {
-                            "name": "Chapter03"
-                        },
-                        {
-                            "name": "Chapter01"
-                        },
-                        {
-                            "name": "Chapter02"
+                    "exams": {
+                        "Chapter01": {
+                            "name": "Chapter01",
+                            "exams_student": {
+                                "Billy": "8.5"
+                            }
                         }
-                    ]
+                    },
+                    "enrollment_queue": []
                 }
-            }
-        },
-        "Instituto": {
-            "students": [],
-            "courses": {}
+            },
+            "is_open": true
         }
     },
     "clients": {
         "Billy": {
-            "enrolled_school": "EOI"
+            "enrolled_school": "EOI",
+            "school_stack": [
+                "EOI"
+            ]
         }
     }
 }

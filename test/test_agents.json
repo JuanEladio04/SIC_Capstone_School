@@ -1,9 +1,9 @@
 {
     "schools": {
         "EOI": {
-            "students": [
-                "Billy"
-            ],
+            "students": {
+                "Billy": "Billy"
+            },
             "courses": {
                 "Python": {
                     "name": "Python",
@@ -14,17 +14,22 @@
                         "Chapter01": {
                             "name": "Chapter01",
                             "exams_student": {
-                                "Billy": ""
+                                "Billy": "8.5"
                             }
                         }
-                    }
+                    },
+                    "enrollment_queue": []
                 }
-            }
+            },
+            "is_open": true
         }
     },
     "clients": {
         "Billy": {
-            "enrolled_school": "EOI"
+            "enrolled_school": "EOI",
+            "school_stack": [
+                "EOI"
+            ]
         }
     }
 }
