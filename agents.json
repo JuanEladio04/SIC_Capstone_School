@@ -2,31 +2,53 @@
     "schools": {
         "EOI": {
             "students": {
-                "Billy": "Billy"
+                "Billy": "Billy",
+                "Alice": "Alice"
             },
             "courses": {
                 "Python": {
                     "name": "Python",
                     "students": [
-                        "Billy"
+                        "Billy",
+                        "Alice"
                     ],
                     "exams": {
                         "Chapter01": {
                             "name": "Chapter01",
                             "exams_student": {
-                                "Billy": "8.5"
+                                "Billy": "8.5",
+                                "Alice": "9.0"
+                            }
+                        },
+                        "Chapter02": {
+                            "name": "Chapter02",
+                            "exams_student": {
+                                "Billy": "7.2"
                             }
                         }
                     },
-                    "enrollment_queue": [],
+                    "enrollment_queue": [
+                        "Carlos"
+                    ],
                     "assists": {
                         "Billy": [
                             "2025-05-15 09:46:31.555878",
-                            "2025-05-15 09:46:31.556088",
-                            "2025-05-15 09:46:31.557424",
-                            "2025-05-15 09:46:31.557695"
+                            "2025-05-15 11:00:00.123456"
+                        ],
+                        "Alice": [
+                            "2025-05-15 09:45:00.987654"
                         ]
                     }
+                },
+                "Math": {
+                    "name": "Math",
+                    "students": [],
+                    "exams": {},
+                    "enrollment_queue": [
+                        "Alice",
+                        "Carlos"
+                    ],
+                    "assists": {}
                 }
             },
             "is_open": true
@@ -34,6 +56,18 @@
     },
     "clients": {
         "Billy": {
+            "enrolled_school": "EOI",
+            "school_stack": [
+                "EOI"
+            ]
+        },
+        "Alice": {
+            "enrolled_school": "EOI",
+            "school_stack": [
+                "EOI"
+            ]
+        },
+        "Carlos": {
             "enrolled_school": "EOI",
             "school_stack": [
                 "EOI"
