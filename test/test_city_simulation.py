@@ -65,14 +65,14 @@ class TestCitySimulation(unittest.TestCase):
         #Client join enrollment queue for a course
         self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
 
-        #Client assists to a course
-        # self.run_command_and_assert("client assist_course Billy Python", "Billy is now enrolled in Python.")
-
         # Show the enrollment queue
         self.run_command_and_assert("school show_enrollment_queue EOI Python", "Enrollment queue for course 'Python' in school 'EOI':\n- Billy")
         
         #Admit the student in the course
         self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
+        
+        #Client assists to a course
+        self.run_command_and_assert("client assist_course Billy Python", "The student 'Billy' assist to Python.")
         
         #Client takes an exam
         self.run_command_and_assert("client take_exam Billy Python Chapter01", "The exam 'Chapter01' has been taken by the student 'Billy'.")
@@ -308,32 +308,32 @@ class TestCitySimulation(unittest.TestCase):
         self.run_command_and_assert("school remove_school Carlos_Cano", "Agent Carlos_Cano removed from the system.")
 
 
-    # def test_client_assist_course(self):
-    #     print('➡️ Testing client assist_course <client_name> <course_name> ...')
+    def test_client_assist_course(self):
+        print('➡️ Testing client assist_course <client_name> <course_name> ...')
 
-    #     self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
-    #     self.run_command_and_assert("client add_client Alice", "Client 'Alice' added to the system.")
-    #     self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
-    #     self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
-    #     self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
-    #     self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
-    #     # --------------------------------------------------------------------------------------------------------------------------------------------------
-    #     # Client joins the enrollment queue for a school
-    #     self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
-    #     # Client assists to a course
-    #     self.run_command_and_assert("client assist_course Billy Python", "Billy is now enrolled in Python.")
-    #     # Client tries to assist to the same course again
-    #     self.run_command_and_assert("client assist_course Billy Python", "Billy is already enrolled in Python.")
-    #     # Client tries to assist to a non-existing course
-    #     self.run_command_and_assert("client assist_course EOI English", "The course 'English' is not found at the school EOI.")
-    #     # Client tries to assist to a course in a non-existing school
-    #     self.run_command_and_assert("client assist_course Billy Palmera Python", "School 'Palmera' do not exist.")
-    #     # Client tries to assist to a course without being enrolled in any school
-    #     self.run_command_and_assert("client assist_course Alice Python", "The student 'Alice' is not enrolled in any school.")
-    #     # --------------------------------------------------------------------------------------------------------------------------------------------------
-    #     self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
-    #     self.run_command_and_assert("client remove_client Alice", "Agent Alice removed from the system.")
-    #     self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
+        self.run_command_and_assert("client add_client Billy", "Client 'Billy' added to the system.")
+        self.run_command_and_assert("client add_client Alice", "Client 'Alice' added to the system.")
+        self.run_command_and_assert("school add_school EOI", "School 'EOI' added to the system.")
+        self.run_command_and_assert("client enroll_in_school Billy EOI", "Client 'Billy' has been enrolled in school 'EOI'.")
+        self.run_command_and_assert("school open EOI", "School 'EOI' is now open.")
+        self.run_command_and_assert("school create_course Python EOI", "Course 'Python' has been created in school 'EOI'.")
+        self.run_command_and_assert("client join_enrollment_queue Billy EOI Python", "Billy joined the enrollment queue for Python in EOI.")
+        self.run_command_and_assert("school admit_student_from_queue EOI Python", "The student 'Billy' has been admitted to the course 'Python'.")
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        
+        # Client assists to a course
+        self.run_command_and_assert("client assist_course Billy Python", "The student 'Billy' assist to Python.")
+        # Client tries to assist to the same course again
+        self.run_command_and_assert("client assist_course Billy Python", "The student 'Billy' assist to Python.")
+        # Client tries to assist to a non-existing course
+        self.run_command_and_assert("client assist_course Billy English", "English is not available in EOI.")
+        # Client tries to assist to a course without being enrolled in any school
+        self.run_command_and_assert("client assist_course Alice Python", "The student 'Alice' is not enrolled in any school.")
+        
+        # --------------------------------------------------------------------------------------------------------------------------------------------------
+        self.run_command_and_assert("client remove_client Billy", "Agent Billy removed from the system.")
+        self.run_command_and_assert("client remove_client Alice", "Agent Alice removed from the system.")
+        self.run_command_and_assert("school remove_school EOI", "Agent EOI removed from the system.")
 
 
     def test_school_show_enrollment_queue(self):

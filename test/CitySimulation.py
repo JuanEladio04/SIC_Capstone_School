@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[12]:
+# In[23]:
 
 
 class Agent:
@@ -75,7 +75,7 @@ class AgentManager:
                 print(agent.describe())     
     
     def load_agents_from_file(self, file_path):
-        """Carga agentes desde un fichero JSON, incluyendo colas de inscripción y otros datos relevantes."""
+        """Carga agentes desde un fichero JSON, incluyendo colas de inscripción, asistencias y otros datos relevantes."""
         import json
         global agents  # Asegurarse de usar el diccionario global
 
@@ -94,6 +94,7 @@ class AgentManager:
                     course = Course(name=course_name)
                     course.students = course_info.get("students", [])
                     course.exams = {}  # Inicializar exámenes como un diccionario
+                    course.assists = course_info.get("assists", {})  # Cargar asistencias
                     # Cargar exámenes como objetos
                     exams_data = course_info.get("exams", {})
                     for exam_name, exam_details in exams_data.items():
@@ -123,7 +124,7 @@ class AgentManager:
             print(f"An error occurred while loading agents: {e}")
 
     def save_agents_to_file(self, file_path):
-        """Guarda los agentes en un fichero JSON, incluyendo colas de inscripción y otros datos relevantes."""
+        """Guarda los agentes en un fichero JSON, incluyendo colas de inscripción, asistencias y otros datos relevantes."""
         import json
         global agents  # Asegurarse de usar el diccionario global
 
@@ -146,7 +147,8 @@ class AgentManager:
                     "name": course.name,
                     "students": course.students,
                     "exams": exams_data,
-                    "enrollment_queue": course.enrollment_queue.queue  # Guardar la cola de inscripción
+                    "enrollment_queue": course.enrollment_queue.queue,
+                    "assists": course.assists  # Guardar asistencias
                 }
             data["schools"][school.name] = {
                 "students": school.students,
@@ -171,7 +173,7 @@ class AgentManager:
 
 # ## Client
 
-# In[14]:
+# In[ ]:
 
 
 class Client(Agent):
@@ -186,7 +188,7 @@ class Client(Agent):
         "client enroll_in_school <client_name> <school_name>": "Enroll a client in an specific school.",
         "client leave_school <client_name>": "Allow a client to leave school.",
         "client join_enrollment_queue <client_name> <school_name> <course_name>": "Join a client in a queue to enroll a course.",
-        "client assist_course <school_name> <couser_name>": "Assist a course in a school.",
+        "client assist_course <client_name> <courser_name>": "Assist a course in a school.",
         "client show_list": "Show the list of clients in the system.",
         "client take_exam <client_name> <course_name> <exam_name>": "Allow a student to take an exam of a enrolled course.",
         "client remove_client <client_name>": "Removes the client from the agents.",
@@ -244,19 +246,29 @@ class Client(Agent):
             print(f"School '{school_name}' do not exist.")
     
     def assist_course(self, course_name):
-        school_name = self.school_stack.peek()
-        school = self.agent_manager.get_agent_by_name(school_name, School)
+        import datetime as dt
+        
+        if not self.school_stack.is_empty():
+            school_name = self.school_stack.peek()
+            school = self.agent_manager.get_agent_by_name(school_name, School)
 
-        if school:
-            course = school.getCourse(course_name)
-            if course:
-                if self.name in course.students:
-                    print(f"{self.name} is already enrolled in {course_name}.")
+            if school:
+                course = school.getCourse(course_name)
+                if course:
+                    if self.name in course.students:
+                        if self.name not in course.assists:
+                            course.assists[self.name] = [str(dt.datetime.now())]
+                        else:
+                            course.assists[self.name].append(str(dt.datetime.now()))
+                        print(f"The student '{self.name}' assist to {course_name}.")
+                    else:
+                        print(f"The student {self.name} is not enrolled in course {course_name}.")
                 else:
-                    course.students.append(self.name)
-                    print(f"{self.name} is now enrolled in {course_name}.")
+                    print(f"{course_name} is not available in {school_name}.")
             else:
-                print(f"{course_name} is not available in {school_name}.")
+                print(f"School '{school_name}' do not exist.")
+        else:
+            print(f"The student '{self.name}' is not enrolled in any school.")
     
     def take_exam(self, course_name, exam_name):
         if not self.school_stack.is_empty():
@@ -296,7 +308,7 @@ class Client(Agent):
 
 # ## School
 
-# In[15]:
+# In[26]:
 
 
 class School(Agent):
@@ -503,7 +515,7 @@ class School(Agent):
 
 # ## Course
 
-# In[16]:
+# In[ ]:
 
 
 class Course():
@@ -512,6 +524,7 @@ class Course():
         self.students = []  
         self.exams = {}
         self.enrollment_queue = Queue()
+        self.assists = {}
     
     def getExam(self, exam_name):
         if exam_name in self.exams:
@@ -520,7 +533,7 @@ class Course():
 
 # ## Exam
 
-# In[17]:
+# In[28]:
 
 
 class Exam():
@@ -531,7 +544,7 @@ class Exam():
 
 # ## City Simulation
 
-# In[18]:
+# In[ ]:
 
 
 class CitySimulation:
@@ -754,8 +767,8 @@ class CitySimulation:
                         client.join_enrollment_queue(school_name, course_name)
                         
             elif parts[1] == 'assist_course':
-                if self.validate_command(parts, 3, "invalid_format", "client assist_course <course_name>"):
-                    client_name, _, course_name = parts
+                if self.validate_command(parts, 4, "invalid_format", "client assist_course <client_name> <courser_name>"):
+                    _, _, client_name, course_name = parts
                     client = self.get_agent_or_error(client_name, Client, "client_not_found")
                 if client:
                     client.assist_course(course_name)
@@ -788,7 +801,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[19]:
+# In[30]:
 
 
 class Stack:
@@ -811,7 +824,7 @@ class Stack:
 
 # ## Queue
 
-# In[20]:
+# In[31]:
 
 
 class Queue:
@@ -844,7 +857,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[21]:
+# In[32]:
 
 
 # Diccionario global para almacenar agentes
@@ -853,7 +866,7 @@ agents = {}
 
 # ## Main program
 
-# In[22]:
+# In[33]:
 
 
 import time
