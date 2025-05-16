@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[23]:
+# In[45]:
 
 
 class Agent:
@@ -21,7 +21,7 @@ class Agent:
 
 # ## Agent Manager
 
-# In[ ]:
+# In[46]:
 
 
 class AgentManager:
@@ -173,7 +173,7 @@ class AgentManager:
 
 # ## Client
 
-# In[ ]:
+# In[47]:
 
 
 class Client(Agent):
@@ -308,7 +308,7 @@ class Client(Agent):
 
 # ## School
 
-# In[26]:
+# In[48]:
 
 
 class School(Agent):
@@ -515,7 +515,7 @@ class School(Agent):
 
 # ## Course
 
-# In[ ]:
+# In[49]:
 
 
 class Course():
@@ -533,7 +533,7 @@ class Course():
 
 # ## Exam
 
-# In[28]:
+# In[50]:
 
 
 class Exam():
@@ -544,7 +544,7 @@ class Exam():
 
 # ## City Simulation
 
-# In[ ]:
+# In[51]:
 
 
 class CitySimulation:
@@ -631,7 +631,11 @@ class CitySimulation:
                 self.agent_manager.save_agents_to_file(file_path)
                 
         elif cmd == 'school':
-            if parts[1] == 'add_school':
+            if len(parts) < 2: 
+                print(self.ERROR_MESSAGES["invalid_format"])
+                self.help_school()
+                
+            elif parts[1] == 'add_school':
                 if self.validate_command(parts, 3, "invalid_format", "school add_school <school_name>"):
                     _, _, school_name = parts
                     school = self.get_agent_or_error(school_name, School, "")
@@ -734,7 +738,11 @@ class CitySimulation:
                 self.help_school()
                 
         elif cmd == 'client':
-            if   parts[1] == 'add_client':
+            if len(parts) < 2: 
+                print(self.ERROR_MESSAGES["invalid_format"])
+                self.help_client()
+                
+            elif  parts[1] == 'add_client':
                 if self.validate_command(parts, 3, "invalid_format", "client add_client <client_name>"):
                     _, _, client_name = parts
                     client = self.get_agent_or_error(client_name, Client, "")
@@ -801,7 +809,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[30]:
+# In[52]:
 
 
 class Stack:
@@ -824,7 +832,7 @@ class Stack:
 
 # ## Queue
 
-# In[31]:
+# In[53]:
 
 
 class Queue:
@@ -857,7 +865,7 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[32]:
+# In[54]:
 
 
 # Diccionario global para almacenar agentes
@@ -866,7 +874,7 @@ agents = {}
 
 # ## Main program
 
-# In[33]:
+# In[55]:
 
 
 import time

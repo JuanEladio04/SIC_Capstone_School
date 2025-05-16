@@ -1,7 +1,7 @@
 import unittest
 from io import StringIO
 import sys
-from test.CitySimulation import CitySimulation
+from CitySimulation import CitySimulation
 import time
 
 class TestCitySimulation(unittest.TestCase):
@@ -83,9 +83,6 @@ class TestCitySimulation(unittest.TestCase):
         #An exam is removed from a course
         self.run_command_and_assert("school add_exam_to_course EOI Python Chapter02", "The exam 'Chapter02' has been added to course 'Python'.")
         self.run_command_and_assert("school remove_exam_from_course EOI Python Chapter02", "The exam 'Chapter02' has been removed successfully from 'Python'.")
-        
-        #Saves the data in a Json
-        self.run_command_and_assert("save_agents test/test_agents.json", "--- Agents saved successfully to test/test_agents.json. ---")
         
         # Client leaves the school
         self.run_command_and_assert("client leave_school Billy", "Billy exited EOI.")

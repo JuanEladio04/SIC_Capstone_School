@@ -13,4 +13,5 @@ services:
     command: >
       bash -c "pip install --no-cache-dir -r requirements.txt &&
       jupyter nbconvert --to script SIC_Capstone_School.ipynb --output test/CitySimulation &&
-      python -m unittest test/test_city_simulation.py"
+      cd test &&
+      python -m unittest test_city_simulation.py"
