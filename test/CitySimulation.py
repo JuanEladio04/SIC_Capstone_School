@@ -5,7 +5,7 @@
 
 # ## Agent
 
-# In[45]:
+# In[ ]:
 
 
 class Agent:
@@ -21,33 +21,43 @@ class Agent:
 
 # ## Agent Manager
 
-# In[46]:
+# In[ ]:
 
 
 class AgentManager:
     """Clase base para gestionar la creación y eliminación de agentes."""
+    
+    _instance = None  
+
+    def __new__(cls, *args, **kwargs):
+        """Controla la creación de una única instancia."""
+        if cls._instance is None:
+            cls._instance = super(AgentManager, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
     def __init__(self):
-        self.agents = {}
-        
-    def filter_agents(self,*agents_types):
+        if not hasattr(self, 'agents'):  # Evita re-inicializar si ya existe
+            self.agents = {}
+
+    def filter_agents(self, *agents_types):
         """Filtra agentes según los tipos proporcionados."""
         filtered_agents = {
-            name: agent for name, agent in agents.items()
-            if isinstance(agent, tuple(agents_types))  
+            name: agent for name, agent in self.agents.items()
+            if isinstance(agent, tuple(agents_types))
         }
         return filtered_agents
-    
+
     def get_agent_by_name(self, agent_name, agent_type):
         """Devuelve el agente con el nombre dado y tipo específico, o None si no se encuentra."""
-        return next((agent for agent in agents.values() 
+        return next((agent for agent in self.agents.values()
                      if isinstance(agent, agent_type) and agent.name == agent_name), None)
 
     def add_agent(self, agent_type, agent_name):
         """Añade un nuevo agente al sistema."""
-        if isinstance(agent_type, type) and agent_type == Client: 
-            agents[agent_name] = Client(agent_name, self)
+        if isinstance(agent_type, type) and agent_type == Client:
+            self.agents[agent_name] = Client(agent_name)
         elif isinstance(agent_type, type) and agent_type == School:
-            agents[agent_name] = School(agent_name, self)
+            self.agents[agent_name] = School(agent_name)
         else:
             print(f"Invalid agent type: {agent_type}. Please use valid agent.")
             return
@@ -56,8 +66,8 @@ class AgentManager:
 
     def remove_agent(self, agent_name):
         """Elimina un agente del sistema."""
-        if agent_name in agents:
-            del agents[agent_name]
+        if agent_name in self.agents:
+            del self.agents[agent_name]
             print(f'Agent {agent_name} removed from the system.')
         else:
             print(f'Agent {agent_name} not found.')
@@ -71,8 +81,8 @@ class AgentManager:
                 print(agent.describe())
         else:
             print("Current agents:")
-            for agent in agents.values():
-                print(agent.describe())     
+            for agent in self.agents.values():
+                print(agent.describe())  
     
     def load_agents_from_file(self, file_path):
         """Carga agentes desde un fichero JSON, incluyendo colas de inscripción, asistencias y otros datos relevantes."""
@@ -173,22 +183,22 @@ class AgentManager:
 
 # ## Client
 
-# In[47]:
+# In[ ]:
 
 
 class Client(Agent):
     """Clase que representa a un cliente que interactúa con el colegio."""
-    def __init__(self, name, agent_manager):
+    def __init__(self, name):
         super().__init__(name)
         self.school_stack = Stack()
-        self.agent_manager = agent_manager
+        self.agent_manager = AgentManager()  
     
     HELP_MESSAGES = {
         "client add_client <client_name>": "Add a client (student) to the system.",
         "client enroll_in_school <client_name> <school_name>": "Enroll a client in an specific school.",
         "client leave_school <client_name>": "Allow a client to leave school.",
         "client join_enrollment_queue <client_name> <school_name> <course_name>": "Join a client in a queue to enroll a course.",
-        "client assist_course <client_name> <courser_name>": "Assist a course in a school.",
+        "client assist_course <client_name> <course_name>": "Assist a course in a school.",
         "client show_list": "Show the list of clients in the system.",
         "client take_exam <client_name> <course_name> <exam_name>": "Allow a student to take an exam of a enrolled course.",
         "client remove_client <client_name>": "Removes the client from the agents.",
@@ -308,16 +318,16 @@ class Client(Agent):
 
 # ## School
 
-# In[48]:
+# In[ ]:
 
 
 class School(Agent):
-    def __init__(self, name, agent_manager):
+    def __init__(self, name):
         super().__init__(name)
         self.students = {}  
         self.courses = {}
         self.is_open = False 
-        self.agent_manager = agent_manager
+        self.agent_manager = AgentManager() 
 
     HELP_MESSAGES = {
         "school add_school <school_name>": "Add a new school to the system.",
@@ -515,7 +525,7 @@ class School(Agent):
 
 # ## Course
 
-# In[49]:
+# In[ ]:
 
 
 class Course():
@@ -533,7 +543,7 @@ class Course():
 
 # ## Exam
 
-# In[50]:
+# In[ ]:
 
 
 class Exam():
@@ -544,7 +554,7 @@ class Exam():
 
 # ## City Simulation
 
-# In[51]:
+# In[ ]:
 
 
 class CitySimulation:
@@ -775,11 +785,11 @@ class CitySimulation:
                         client.join_enrollment_queue(school_name, course_name)
                         
             elif parts[1] == 'assist_course':
-                if self.validate_command(parts, 4, "invalid_format", "client assist_course <client_name> <courser_name>"):
+                if self.validate_command(parts, 4, "invalid_format", "client assist_course <client_name> <course_name>"):
                     _, _, client_name, course_name = parts
                     client = self.get_agent_or_error(client_name, Client, "client_not_found")
-                if client:
-                    client.assist_course(course_name)
+                    if client:
+                        client.assist_course(course_name)
 
             elif   parts[1] == 'show_list':
                 if self.validate_command(parts, 2, "invalid_format", "client show_list"):
@@ -809,7 +819,7 @@ class CitySimulation:
 
 # ## Stack
 
-# In[52]:
+# In[ ]:
 
 
 class Stack:
@@ -832,7 +842,7 @@ class Stack:
 
 # ## Queue
 
-# In[53]:
+# In[ ]:
 
 
 class Queue:
@@ -865,16 +875,16 @@ class Queue:
 
 # ## General agent dictionary
 
-# In[54]:
+# In[ ]:
 
 
 # Diccionario global para almacenar agentes
 agents = {}
 
 
-# ## Main program
+# # Main program
 
-# In[55]:
+# In[ ]:
 
 
 import time
