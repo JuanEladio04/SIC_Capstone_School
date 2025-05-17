@@ -143,7 +143,7 @@ Primero, recordemos qué significan estos términos:
 
 
 
-# Patronces de diseño identificados
+# Patrones de diseño identificados
 
 En la revisión del código se listan los patrones de diseño identificados directa o indirectamente:
 
