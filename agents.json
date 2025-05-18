@@ -52,6 +52,30 @@
                 }
             },
             "is_open": true
+        },
+        "Carlos_Cano": {
+            "students": {
+                "Juan": "Juan"
+            },
+            "courses": {
+                "English": {
+                    "name": "English",
+                    "students": [
+                        "Juan"
+                    ],
+                    "exams": {
+                        "Unit01": {
+                            "name": "Unit01",
+                            "exams_student": {
+                                "Juan": "7.5"
+                            }
+                        }
+                    },
+                    "enrollment_queue": [],
+                    "assists": {}
+                }
+            },
+            "is_open": true
         }
     },
     "clients": {
@@ -71,6 +95,12 @@
             "enrolled_school": "EOI",
             "school_stack": [
                 "EOI"
+            ]
+        },
+        "Juan": {
+            "enrolled_school": "Carlos_Cano",
+            "school_stack": [
+                "Carlos_Cano"
             ]
         }
     }
